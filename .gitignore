@@ -23,7 +23,3 @@ share/python-wheels/
 *.egg
 MANIFEST
 .mypy_cache
-
-# Included in maestro repo
-/__init__.py
-/examples.py
