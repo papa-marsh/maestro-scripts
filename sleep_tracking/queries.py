@@ -74,7 +74,6 @@ def get_sleep_history(
             sleep_periods.append((current_sleep_start, event.timestamp))
             current_sleep_start = None
 
-    # If still asleep at the end of the query period, use the end time
     if current_sleep_start:
         sleep_periods.append((current_sleep_start, min(local_now(), end)))
 
