@@ -2,16 +2,19 @@ from datetime import timedelta
 
 from structlog.stdlib import get_logger
 
+from maestro.domains import Person
+from maestro.integrations import FiredEvent
 from maestro.registry import person
 from maestro.triggers import event_fired_trigger
-from maestro.utils import Notif, local_now
-from maestro.utils.dates import format_duration
+from maestro.utils import Notif, format_duration, local_now
 from scripts.sleep_tracking.queries import (
     delete_last_event,
     get_last_event,
+    get_sleep_history,
     get_total_sleep,
     save_sleep_event,
 )
+from scripts.utils.secrets import USER_ID_TO_PERSON
 
 FALSE_ALARM_THRESHOLD = timedelta(minutes=15)
 
@@ -21,8 +24,10 @@ NOTIF_ID = "sleep_tracker"
 log = get_logger()
 
 
-def sleep_tracker_notify(message: str, emily_only: bool = False) -> None:
-    target = person.emily if emily_only else [person.emily, person.marshall]
+def sleep_tracker_notify(
+    message: str,
+    target: Person | list[Person] = [person.marshall, person.emily],
+) -> None:
     Notif(
         message=message,
         title=NOTIF_TITLE,
@@ -82,7 +87,7 @@ def olivia_awake() -> None:
 
 
 @event_fired_trigger("olivia_info")
-def olivia_info() -> None:
+def olivia_info(event: FiredEvent) -> None:
     now = local_now()
     last_event = get_last_event()
 
@@ -90,5 +95,18 @@ def olivia_info() -> None:
     total_duration = format_duration(get_total_sleep())
 
     state = "awake" if last_event.wakeup else "asleep"
-    message = f"Olivia has been {state} for {duration}\nTotal sleep today: {total_duration}"
-    sleep_tracker_notify(message)
+    message = (
+        f"Olivia has been {state} for {duration}\n"
+        "Long press for more\n\n"
+        f"Total sleep today: {total_duration}"
+    )
+
+    for sleep_period in get_sleep_history():
+        start, end = sleep_period
+        start_str = start.strftime("%-I:%M%P")
+        end_str = end.strftime("%-I:%M%P")
+        duration = format_duration(end - start)
+        message += f"\n{start_str}-{end_str} ({duration})"
+
+    if target := USER_ID_TO_PERSON.get(event.user_id or ""):
+        sleep_tracker_notify(message, target)

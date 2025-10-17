@@ -23,3 +23,5 @@ share/python-wheels/
 *.egg
 MANIFEST
 .mypy_cache
+
+utils/secrets.py

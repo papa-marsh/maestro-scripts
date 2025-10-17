@@ -37,6 +37,50 @@ def delete_last_event() -> None:
         db.session.commit()
 
 
+def get_sleep_history(
+    start: datetime | None = None,
+    end: datetime | None = None,
+) -> list[tuple[datetime, datetime]]:
+    """Return a list of sleep period tuples: (start, end) for the given time interval"""
+    if start is None:
+        start = local_now().replace(hour=0, minute=0, second=0, microsecond=0)
+    if end is None:
+        end = local_now()
+
+    events: list[SleepEvent] = (
+        db.session.query(SleepEvent)
+        .filter(SleepEvent.timestamp >= start)
+        .filter(SleepEvent.timestamp < end)
+        .order_by(SleepEvent.timestamp.asc())
+        .all()
+    )
+
+    if not events:
+        return []
+
+    sleep_periods: list[tuple[datetime, datetime]] = []
+    current_sleep_start: datetime | None = None
+
+    for event in events:
+        if not isinstance(event.wakeup, bool) or not isinstance(event.timestamp, datetime):
+            raise TypeError
+
+        if event.timestamp.tzinfo is None:
+            event.timestamp = event.timestamp.replace(tzinfo=UTC).astimezone(TIMEZONE)
+
+        if not event.wakeup:
+            current_sleep_start = event.timestamp
+        elif event.wakeup and current_sleep_start:
+            sleep_periods.append((current_sleep_start, event.timestamp))
+            current_sleep_start = None
+
+    # If still asleep at the end of the query period, use the end time
+    if current_sleep_start:
+        sleep_periods.append((current_sleep_start, min(local_now(), end)))
+
+    return sleep_periods
+
+
 def get_total_sleep(date: datetime | None = None) -> timedelta:
     """
     Calculate total sleep time for a given day.
