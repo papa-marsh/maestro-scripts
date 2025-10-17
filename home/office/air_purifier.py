@@ -13,8 +13,7 @@ def air_purifier_off() -> None:
     fan.office_purifier.turn_off()
 
 
-@state_change_trigger(person.marshall)
-@state_change_trigger(person.emily)
+@state_change_trigger(person.marshall, person.emily)
 def air_purifier_on_while_away() -> None:
     if person.marshall.state != "home" and person.emily.state != "home":
         fan.office_purifier.turn_on()
