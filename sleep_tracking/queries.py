@@ -6,8 +6,8 @@ from scripts.sleep_tracking.models import SleepEvent
 
 
 def save_sleep_event(timestamp: datetime, wakeup: bool) -> None:
-    wake_event = SleepEvent(timestamp, wakeup)
-    db.session.add(wake_event)
+    sleep_event = SleepEvent(timestamp=timestamp, wakeup=wakeup)
+    db.session.add(sleep_event)
     db.session.commit()
 
 
