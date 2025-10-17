@@ -27,7 +27,6 @@ def sleep_tracker_notify(message: str, emily_only: bool = False) -> None:
         message=message,
         title=NOTIF_TITLE,
         tag=NOTIF_ID,
-        group=NOTIF_ID,
     ).send(target)
 
 
