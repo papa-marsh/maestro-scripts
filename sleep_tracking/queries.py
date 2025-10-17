@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from maestro.app import db
+from maestro.config import TIMEZONE
 from maestro.utils.dates import local_now
 from scripts.sleep_tracking.models import SleepEvent
 
@@ -14,10 +15,26 @@ def save_sleep_event(timestamp: datetime, wakeup: bool) -> None:
 def get_last_event() -> SleepEvent:
     """Get the most recent sleep event."""
     latest_event = db.session.query(SleepEvent).order_by(SleepEvent.timestamp.desc()).first()
+
+    if latest_event is None:
+        this_morning_at_midnight = local_now().replace(hour=0, minute=0, second=0, microsecond=0)
+        latest_event = SleepEvent(timestamp=this_morning_at_midnight, wakeup=False)
+
     if not isinstance(latest_event, SleepEvent):
         raise TypeError
 
+    if latest_event.timestamp.tzinfo is None:
+        latest_event.timestamp = latest_event.timestamp.replace(tzinfo=UTC).astimezone(TIMEZONE)
+
     return latest_event
+
+
+def delete_last_event() -> None:
+    """Delete the most recent sleep event."""
+    latest_event = db.session.query(SleepEvent).order_by(SleepEvent.timestamp.desc()).first()
+    if latest_event:
+        db.session.delete(latest_event)
+        db.session.commit()
 
 
 def get_total_sleep(date: datetime | None = None) -> timedelta:
@@ -50,11 +67,14 @@ def get_total_sleep(date: datetime | None = None) -> timedelta:
         if not isinstance(event.wakeup, bool) or not isinstance(event.timestamp, datetime):
             raise TypeError
 
+        if event.timestamp.tzinfo is None:
+            event.timestamp = event.timestamp.replace(tzinfo=UTC).astimezone(TIMEZONE)
+
         if not event.wakeup:
             current_sleep_start = event.timestamp
         elif event.wakeup and current_sleep_start:
             duration = event.timestamp - current_sleep_start
-            if duration.total_seconds() >= FALSE_ALARM_THRESHOLD:
+            if duration >= FALSE_ALARM_THRESHOLD:
                 total_sleep += event.timestamp - current_sleep_start
             current_sleep_start = None
 
