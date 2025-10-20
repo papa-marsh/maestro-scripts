@@ -3,7 +3,8 @@ from datetime import UTC, datetime, timedelta
 from maestro.app import db
 from maestro.config import TIMEZONE
 from maestro.utils.dates import local_now
-from scripts.sleep_tracking.models import SleepEvent
+
+from .models import SleepEvent
 
 
 def save_sleep_event(timestamp: datetime, wakeup: bool) -> None:
@@ -85,8 +86,6 @@ def get_total_sleep(date: datetime | None = None) -> timedelta:
     Calculate total sleep time for a given day.
     Ignores intervals less than FALSE_ALARM_THRESHOLD.
     """
-    from scripts.sleep_tracking.main import FALSE_ALARM_THRESHOLD
-
     date = local_now() if date is None else date
 
     start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -116,9 +115,7 @@ def get_total_sleep(date: datetime | None = None) -> timedelta:
         if not event.wakeup:
             current_sleep_start = event.timestamp
         elif event.wakeup and current_sleep_start:
-            duration = event.timestamp - current_sleep_start
-            if duration >= FALSE_ALARM_THRESHOLD:
-                total_sleep += event.timestamp - current_sleep_start
+            total_sleep += event.timestamp - current_sleep_start
             current_sleep_start = None
 
     if current_sleep_start:

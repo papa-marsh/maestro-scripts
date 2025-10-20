@@ -7,14 +7,15 @@ from maestro.integrations import FiredEvent
 from maestro.registry import person
 from maestro.triggers import event_fired_trigger
 from maestro.utils import Notif, format_duration, local_now
-from scripts.sleep_tracking.queries import (
+from scripts.utils.secrets import USER_ID_TO_PERSON
+
+from .queries import (
     delete_last_event,
     get_last_event,
     get_sleep_history,
     get_total_sleep,
     save_sleep_event,
 )
-from scripts.utils.secrets import USER_ID_TO_PERSON
 
 FALSE_ALARM_THRESHOLD = timedelta(minutes=15)
 
@@ -56,11 +57,11 @@ def olivia_asleep() -> None:
         return
 
     duration = format_duration(now - last_event.timestamp)
+    save_sleep_event(timestamp=now, wakeup=False)
     total_duration = format_duration(get_total_sleep())
 
     message = notif_message(duration, total_duration, wakeup=False)
     sleep_tracker_notify(message)
-    save_sleep_event(timestamp=now, wakeup=False)
 
 
 @event_fired_trigger("olivia_awake")
@@ -79,11 +80,11 @@ def olivia_awake() -> None:
         return
 
     duration = format_duration(now - last_event.timestamp)
+    save_sleep_event(timestamp=now, wakeup=True)
     total_duration = format_duration(get_total_sleep())
 
     message = notif_message(duration, total_duration, wakeup=True)
     sleep_tracker_notify(message)
-    save_sleep_event(timestamp=now, wakeup=True)
 
 
 @event_fired_trigger("olivia_info")
