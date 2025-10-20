@@ -38,11 +38,11 @@ def delete_last_event() -> None:
         db.session.commit()
 
 
-def get_sleep_history(
+def get_wake_windows(
     start: datetime | None = None,
     end: datetime | None = None,
-) -> list[tuple[datetime, datetime]]:
-    """Return a list of sleep period tuples: (start, end) for the given time interval"""
+) -> list[tuple[datetime | None, datetime | None]]:
+    """Return a list of 'wake window' tuples: (start, end) for the given time interval"""
     if start is None:
         start = local_now().replace(hour=0, minute=0, second=0, microsecond=0)
     if end is None:
@@ -59,68 +59,47 @@ def get_sleep_history(
     if not events:
         return []
 
-    sleep_periods: list[tuple[datetime, datetime]] = []
-    current_sleep_start: datetime | None = None
+    wake_windows: list[tuple[datetime | None, datetime | None]] = []
+    current_window_start: datetime | None = None
 
     for event in events:
         if not isinstance(event.wakeup, bool) or not isinstance(event.timestamp, datetime):
             raise TypeError
-
         if event.timestamp.tzinfo is None:
             event.timestamp = event.timestamp.replace(tzinfo=UTC).astimezone(TIMEZONE)
 
-        if not event.wakeup:
-            current_sleep_start = event.timestamp
-        elif event.wakeup and current_sleep_start:
-            sleep_periods.append((current_sleep_start, event.timestamp))
-            current_sleep_start = None
+        if event.wakeup:
+            current_window_start = event.timestamp
+        else:
+            if not current_window_start:
+                wake_windows.append((None, event.timestamp))
+            else:
+                wake_windows.append((current_window_start, event.timestamp))
+            current_window_start = None
 
-    if current_sleep_start:
-        sleep_periods.append((current_sleep_start, min(local_now(), end)))
+    if current_window_start:
+        wake_windows.append((current_window_start, None))
 
-    return sleep_periods
+    return wake_windows
 
 
-def get_total_sleep(date: datetime | None = None) -> timedelta:
-    """
-    Calculate total sleep time for a given day.
-    Ignores intervals less than FALSE_ALARM_THRESHOLD.
-    """
-    date = local_now() if date is None else date
+def get_awake_time(
+    start: datetime | None = None,
+    end: datetime | None = None,
+) -> timedelta:
+    """Calculate total awake time time for a given day."""
+    if start is None:
+        start = local_now().replace(hour=0, minute=0, second=0, microsecond=0)
+    if end is None:
+        end = local_now()
 
-    start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
-    end_of_day = start_of_day + timedelta(days=1)
+    wake_windows = get_wake_windows(start, end)
+    total_wake_time = timedelta()
 
-    events: list[SleepEvent] = (
-        db.session.query(SleepEvent)
-        .filter(SleepEvent.timestamp >= start_of_day)
-        .filter(SleepEvent.timestamp < end_of_day)
-        .order_by(SleepEvent.timestamp.asc())
-        .all()
-    )
+    for window in wake_windows:
+        window_start = window[0] or start
+        window_end = window[1] or end
 
-    if not events:
-        return timedelta()
+        total_wake_time += window_end - window_start
 
-    total_sleep = timedelta()
-    current_sleep_start: datetime | None = start_of_day
-
-    for event in events:
-        if not isinstance(event.wakeup, bool) or not isinstance(event.timestamp, datetime):
-            raise TypeError
-
-        if event.timestamp.tzinfo is None:
-            event.timestamp = event.timestamp.replace(tzinfo=UTC).astimezone(TIMEZONE)
-
-        if not event.wakeup:
-            current_sleep_start = event.timestamp
-        elif event.wakeup and current_sleep_start:
-            total_sleep += event.timestamp - current_sleep_start
-            current_sleep_start = None
-
-    if current_sleep_start:
-        end_time = min(local_now(), end_of_day)
-        if end_time > current_sleep_start:
-            total_sleep += end_time - current_sleep_start
-
-    return total_sleep
+    return total_wake_time

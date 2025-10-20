@@ -11,9 +11,9 @@ from scripts.utils.secrets import USER_ID_TO_PERSON
 
 from .queries import (
     delete_last_event,
+    get_awake_time,
     get_last_event,
-    get_sleep_history,
-    get_total_sleep,
+    get_wake_windows,
     save_sleep_event,
 )
 
@@ -38,7 +38,7 @@ def sleep_tracker_notify(
 
 def notif_message(duration: str, total_duration: str, wakeup: bool) -> str:
     event_text = "woke up" if wakeup else "went to sleep"
-    return f"Olivia {event_text} after {duration}\nTotal sleep today: {total_duration}"
+    return f"Olivia {event_text} after {duration}\nWake time today: {total_duration}"
 
 
 @event_fired_trigger("olivia_asleep")
@@ -58,7 +58,7 @@ def olivia_asleep() -> None:
 
     duration = format_duration(now - last_event.timestamp)
     save_sleep_event(timestamp=now, wakeup=False)
-    total_duration = format_duration(get_total_sleep())
+    total_duration = format_duration(get_awake_time())
 
     message = notif_message(duration, total_duration, wakeup=False)
     sleep_tracker_notify(message)
@@ -81,7 +81,7 @@ def olivia_awake() -> None:
 
     duration = format_duration(now - last_event.timestamp)
     save_sleep_event(timestamp=now, wakeup=True)
-    total_duration = format_duration(get_total_sleep())
+    total_duration = format_duration(get_awake_time())
 
     message = notif_message(duration, total_duration, wakeup=True)
     sleep_tracker_notify(message)
@@ -93,21 +93,28 @@ def olivia_info(event: FiredEvent) -> None:
     last_event = get_last_event()
 
     duration = format_duration(now - last_event.timestamp)
-    total_duration = format_duration(get_total_sleep())
+    total_duration = format_duration(get_awake_time())
 
     state = "awake" if last_event.wakeup else "asleep"
     message = (
         f"Olivia has been {state} for {duration}\n"
         "Long press for more\n\n"
-        f"Total sleep today: {total_duration}"
+        f"Wake time today: {total_duration}"
     )
 
-    for sleep_period in get_sleep_history():
-        start, end = sleep_period
-        start_str = start.strftime("%-I:%M%P")
-        end_str = end.strftime("%-I:%M%P")
-        duration = format_duration(end - start)
-        message += f"\n{start_str}-{end_str} ({duration})"
+    for wake_window in get_wake_windows():
+        start, end = wake_window
+        start_str = start.strftime("%-I:%M%P") if start else ""
+        end_str = end.strftime("%-I:%M%P") if end else ""
+
+        if start is None and end:
+            message += f"\nAwake until {end_str}"
+        if start and end:
+            duration = format_duration(end - start)
+            message += f"\n{start_str}-{end_str} ({duration})"
+        if start and end is None:
+            duration = format_duration(local_now() - start)
+            message += f"\nAwake since {start_str} ({duration})"
 
     if target := USER_ID_TO_PERSON.get(event.user_id or ""):
         sleep_tracker_notify(message, target)
