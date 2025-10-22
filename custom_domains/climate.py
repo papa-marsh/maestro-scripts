@@ -1,4 +1,5 @@
 from enum import StrEnum, auto
+from typing import override
 
 from maestro.domains.climate import Climate
 
@@ -19,13 +20,16 @@ class Thermostat(Climate):
         AWAY = auto()
         HOLD = auto()
 
-    def set_fan_mode(self, mode: FanMode) -> None:
+    @override
+    def set_fan_mode(self, mode: FanMode) -> None:  # type:ignore[override]
         self.perform_action("set_fan_mode", mode=mode)
 
-    def set_hvac_mode(self, mode: HVACMode) -> None:
+    @override
+    def set_hvac_mode(self, mode: HVACMode) -> None:  # type:ignore[override]
         self.perform_action("set_hvac_mode", mode=mode)
 
-    def set_preset_mode(self, mode: PresetMode) -> None:
+    @override
+    def set_preset_mode(self, mode: PresetMode) -> None:  # type:ignore[override]
         self.perform_action("set_preset_mode", mode=mode)
 
 
@@ -39,10 +43,12 @@ class BathroomFloor(Climate):
         TEMPORARY_HOLD = "Temporary Hold"
         PERMANENT_HOLD = "Permanent Hold"
 
-    def set_hvac_mode(self, mode: HVACMode) -> None:
+    @override
+    def set_hvac_mode(self, mode: HVACMode) -> None:  # type:ignore[override]
         self.perform_action("set_hvac_mode", mode=mode)
 
-    def set_preset_mode(self, mode: PresetMode) -> None:
+    @override
+    def set_preset_mode(self, mode: PresetMode) -> None:  # type:ignore[override]
         self.perform_action("set_preset_mode", mode=mode)
 
 
@@ -62,11 +68,14 @@ class TeslaHVAC(Climate):
         DOG = auto()
         CAMP = auto()
 
-    def set_fan_mode(self, mode: FanMode) -> None:
+    @override
+    def set_fan_mode(self, mode: FanMode) -> None:  # type:ignore[override]
         self.perform_action("set_fan_mode", mode=mode)
 
-    def set_hvac_mode(self, mode: HVACMode) -> None:
+    @override
+    def set_hvac_mode(self, mode: HVACMode) -> None:  # type:ignore[override]
         self.perform_action("set_hvac_mode", mode=mode)
 
-    def set_preset_mode(self, mode: PresetMode) -> None:
+    @override
+    def set_preset_mode(self, mode: PresetMode) -> None:  # type:ignore[override]
         self.perform_action("set_preset_mode", mode=mode)
