@@ -14,6 +14,8 @@ from maestro.registry import (
 
 
 class Nyx:
+    watch_complication_id = "maestro.nyx_complication"
+
     # Binary sensors
     charging = binary_sensor.nyx_charging
     charger = binary_sensor.nyx_charger
@@ -90,6 +92,8 @@ class Nyx:
 
 
 class Tess:
+    watch_complication_id = "maestro.tess_complication"
+
     # Binary sensors
     charging = binary_sensor.tess_charging
     charger = binary_sensor.tess_charger

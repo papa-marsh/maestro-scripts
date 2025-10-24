@@ -1,6 +1,5 @@
 from maestro.domains.media_player import MediaPlayer
-from maestro.integrations.home_assistant.domain import Domain
-from maestro.integrations.home_assistant.types import EntityId
+from maestro.integrations import Domain, EntityId
 
 
 class SonosSpeaker(MediaPlayer):

@@ -10,10 +10,10 @@ DEFAULT_CHARGE_LIMIT = 80
 
 @state_change_trigger(Nyx.charger, Tess.charger, to_state="on")
 def high_charge_limit(state_change: StateChangeEvent) -> None:
-    vehicle = Nyx if state_change.entity_id == Nyx.charger else Tess
-    name = vehicle.__name__
+    vehicle = Nyx if state_change.entity_id == Nyx.charger.id else Tess
 
     if int(vehicle.charge_limit.state) > DEFAULT_CHARGE_LIMIT:
+        name = vehicle.__name__
         Notif(
             title="High Charge Limit",
             message=f"{name} is plugged in with a charge limit of {vehicle.charge_limit.state}%.",
