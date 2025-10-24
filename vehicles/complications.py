@@ -53,11 +53,19 @@ def update_complication_trailing(state_change: StateChangeEvent) -> None:
 def update_complication_outer(state_change: StateChangeEvent) -> None:
     complication, vehicle = get_complication_and_vehicle(state_change.entity_id)
     text = vehicle.battery.state
-    text += "❄️" if vehicle.climate.state == "heat_cool" else "%"
+    if vehicle.climate.state == vehicle.climate.HVACMode.HEAT_COOL:
+        setpoint = vehicle.climate.temperature
+        inside_temp = vehicle.climate.current_temperature
+        if setpoint == inside_temp:
+            text += "❄️" if setpoint <= int(vehicle.temperature_outside.state) else "♨️"
+        else:
+            text += "❄️" if setpoint <= inside_temp else "♨️"
+    else:
+        text += "%"
     complication.outer = text
 
 
 @state_change_trigger(Nyx.charger, Tess.charger)
 def update_complication_gauge(state_change: StateChangeEvent) -> None:
     complication, vehicle = get_complication_and_vehicle(state_change.entity_id)
-    complication.gauge = int(vehicle.battery.state) / int(vehicle.charge_limit.state)
+    complication.gauge = float(vehicle.battery.state) / float(vehicle.charge_limit.state)
