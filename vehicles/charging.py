@@ -36,4 +36,4 @@ def charge_reminder() -> None:
                 message=f"{name} is unplugged with only {vehicle.battery.state}% battery",
                 tag=f"{name.lower()}_charge_reminder",
                 priority=Notif.Priority.TIME_SENSITIVE,
-            ).send([person.marshall, person.emily])
+            ).send(person.marshall, person.emily)
