@@ -25,3 +25,4 @@ MANIFEST
 .mypy_cache
 
 utils/secrets.py
+config/zones.py

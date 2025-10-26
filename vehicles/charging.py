@@ -26,7 +26,7 @@ def charge_reminder() -> None:
     for vehicle in (Nyx, Tess):
         name = vehicle.__name__
 
-        is_home = vehicle.location_tracker.state == "home"
+        is_home = vehicle.location.state == "home"
         unplugged = vehicle.charger == "off"
         low_battery = int(vehicle.battery.state) < int(vehicle.charge_limit.state) - 20
 

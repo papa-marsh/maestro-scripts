@@ -29,11 +29,12 @@ def sleep_tracker_notify(
     message: str,
     target: Person | list[Person] = [person.marshall, person.emily],
 ) -> None:
+    targets = [target] if not isinstance(target, list) else target
     Notif(
         message=message,
         title=NOTIF_TITLE,
         tag=NOTIF_ID,
-    ).send(target)
+    ).send(*targets)
 
 
 def notif_message(duration: str, total_duration: str, wakeup: bool) -> str:

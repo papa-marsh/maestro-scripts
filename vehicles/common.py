@@ -40,8 +40,8 @@ class Nyx:
     windows_cover = cover.nyx_windows
 
     # Device trackers
-    destination_location_tracker = device_tracker.nyx_destination_location_tracker
-    location_tracker = device_tracker.nyx_location_tracker
+    destination = device_tracker.nyx_destination_location_tracker
+    location = device_tracker.nyx_location_tracker
 
     # Locks
     charge_port_latch = lock.nyx_charge_port_latch
@@ -118,8 +118,8 @@ class Tess:
     windows_cover = cover.tess_windows
 
     # Device trackers
-    destination_location_tracker = device_tracker.tess_destination_location_tracker
-    location_tracker = device_tracker.tess_location_tracker
+    destination = device_tracker.tess_destination_location_tracker
+    location = device_tracker.tess_location_tracker
 
     # Locks
     charge_port_latch = lock.tess_charge_port_latch

@@ -1,15 +1,23 @@
+from contextlib import suppress
+
 from maestro.integrations import EntityId, StateChangeEvent, StateManager
 from maestro.registry import maestro
-from maestro.triggers import MaestroEvent, maestro_trigger, state_change_trigger
+from maestro.triggers import (
+    HassEvent,
+    MaestroEvent,
+    hass_trigger,
+    maestro_trigger,
+    state_change_trigger,
+)
 from maestro.utils import local_now
 from scripts.custom_domains import AppleWatchComplication
 
 from .common import Nyx, Tess
 
 
+@hass_trigger(HassEvent.STARTUP)
 @maestro_trigger(MaestroEvent.STARTUP)
 def initialize_complication_entities() -> None:
-    state_manager = StateManager()
     gauge_text = AppleWatchComplication.GaugeText(
         leading="",
         outer="",
@@ -18,11 +26,13 @@ def initialize_complication_entities() -> None:
     )
 
     for vehicle in (Nyx, Tess):
-        state_manager.upsert_hass_entity(
-            entity_id=EntityId(vehicle.watch_complication_id),
-            state=local_now().isoformat(),
-            attributes=dict(gauge_text),
-        )
+        with suppress(FileExistsError):
+            StateManager().upsert_hass_entity(
+                entity_id=EntityId(vehicle.watch_complication_id),
+                state=local_now().isoformat(),
+                attributes=dict(gauge_text),
+                create_only=True,
+            )
 
 
 def get_complication_and_vehicle(
