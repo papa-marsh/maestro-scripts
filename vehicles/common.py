@@ -16,42 +16,34 @@ from maestro.registry import (
 class Nyx:
     watch_complication_id = "maestro.nyx_complication"
 
-    # Binary sensors
     charging = binary_sensor.nyx_charging
     charger = binary_sensor.nyx_charger
     doors = binary_sensor.nyx_doors
     online = binary_sensor.nyx_online
     windows = binary_sensor.nyx_windows
 
-    # Buttons
     flash_lights = button.nyx_flash_lights
     force_data_update = button.nyx_force_data_update
     horn = button.nyx_horn
     remote_start = button.nyx_remote_start
     wake_up = button.nyx_wake_up
 
-    # Climate
     climate = climate.nyx_hvac_climate_system
 
-    # Covers
     charger_door = cover.nyx_charger_door
     frunk = cover.nyx_frunk
     trunk = cover.nyx_trunk
     windows_cover = cover.nyx_windows
 
-    # Device trackers
     destination = device_tracker.nyx_destination_location_tracker
     location = device_tracker.nyx_location_tracker
 
-    # Locks
     charge_port_latch = lock.nyx_charge_port_latch
     lock = lock.nyx_doors
 
-    # Numbers
     charge_limit = number.nyx_charge_limit
     charging_amps = number.nyx_charging_amps
 
-    # Selects
     cabin_overheat_protection = select.nyx_cabin_overheat_protection
     heated_seat_left = select.nyx_heated_seat_left
     heated_seat_rear_center = select.nyx_heated_seat_rear_center
@@ -60,7 +52,6 @@ class Nyx:
     heated_seat_right = select.nyx_heated_seat_right
     heated_steering_wheel = select.nyx_heated_steering_wheel
 
-    # Sensors
     arrival_time = sensor.nyx_arrival_time
     battery = sensor.nyx_battery
     charger_power = sensor.nyx_charger_power
@@ -80,56 +71,46 @@ class Nyx:
     tpms_rear_left = sensor.nyx_tpms_rear_left
     tpms_rear_right = sensor.nyx_tpms_rear_right
 
-    # Switches
     charger_switch = switch.nyx_charger
     heated_steering = switch.nyx_heated_steering
     polling = switch.nyx_polling
     sentry_mode = switch.nyx_sentry_mode
     valet_mode = switch.nyx_valet_mode
 
-    # Update
     software_update = update.nyx_software_update
 
 
 class Tess:
     watch_complication_id = "maestro.tess_complication"
 
-    # Binary sensors
     charging = binary_sensor.tess_charging
     charger = binary_sensor.tess_charger
     doors = binary_sensor.tess_doors
     online = binary_sensor.tess_online
     windows = binary_sensor.tess_windows
 
-    # Buttons
     flash_lights = button.tess_flash_lights
     force_data_update = button.tess_force_data_update
     horn = button.tess_horn
     remote_start = button.tess_remote_start
     wake_up = button.tess_wake_up
 
-    # Climate
     climate = climate.tess_hvac_climate_system
 
-    # Covers
     charger_door = cover.tess_charger_door
     frunk = cover.tess_frunk
     trunk = cover.tess_trunk
     windows_cover = cover.tess_windows
 
-    # Device trackers
     destination = device_tracker.tess_destination_location_tracker
     location = device_tracker.tess_location_tracker
 
-    # Locks
     charge_port_latch = lock.tess_charge_port_latch
     lock = lock.tess_doors
 
-    # Numbers
     charge_limit = number.tess_charge_limit
     charging_amps = number.tess_charging_amps
 
-    # Selects
     cabin_overheat_protection = select.tess_cabin_overheat_protection
     heated_seat_left = select.tess_heated_seat_left
     heated_seat_rear_center = select.tess_heated_seat_rear_center
@@ -138,7 +119,6 @@ class Tess:
     heated_seat_right = select.tess_heated_seat_right
     heated_steering_wheel = select.tess_heated_steering_wheel
 
-    # Sensors
     arrival_time = sensor.tess_arrival_time
     battery = sensor.tess_battery
     charger_power = sensor.tess_charger_power
@@ -158,12 +138,10 @@ class Tess:
     tpms_rear_left = sensor.tess_tpms_rear_left
     tpms_rear_right = sensor.tess_tpms_rear_right
 
-    # Switches
     charger_switch = switch.tess_charger
     heated_steering = switch.tess_heated_steering
     polling = switch.tess_polling
     sentry_mode = switch.tess_sentry_mode
     valet_mode = switch.tess_valet_mode
 
-    # Update
     software_update = update.tess_software_update
