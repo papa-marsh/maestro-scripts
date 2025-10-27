@@ -14,7 +14,7 @@ from maestro.utils import Notif
 
 
 @hass_trigger(HassEvent.STARTUP)
-@maestro_trigger(MaestroEvent.STARTUP)
+@maestro_trigger(MaestroEvent.STARTUP_NOT_WORKING_YET)
 def initialize_meeting_active_entity() -> None:
     with suppress(FileExistsError):
         StateManager().upsert_hass_entity(
