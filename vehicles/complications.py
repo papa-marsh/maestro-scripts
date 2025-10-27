@@ -53,25 +53,28 @@ def update_complication_leading(state_change: StateChangeEvent) -> None:
     complication.leading = "🔒" if state_change.new.state == "locked" else ""
 
 
-@state_change_trigger(Nyx.charger, Tess.charger)
+@state_change_trigger(Nyx.climate, Tess.climate)
 def update_complication_trailing(state_change: StateChangeEvent) -> None:
-    complication, _ = get_complication_and_vehicle(state_change.entity_id)
-    complication.trailing = "⚡️" if state_change.new.state == "on" else ""
+    complication, vehicle = get_complication_and_vehicle(state_change.entity_id)
+
+    if vehicle.climate.state != vehicle.climate.HVACMode.HEAT_COOL:
+        complication.trailing = ""
+        return
+
+    setpoint = vehicle.climate.temperature
+    inside_temp = vehicle.climate.current_temperature
+    if setpoint == inside_temp:
+        outside_temp = int(vehicle.temperature_outside.state)
+        complication.trailing = "❄️" if setpoint <= outside_temp else "♨️"
+    else:
+        complication.trailing = "❄️" if setpoint <= inside_temp else "♨️"
 
 
-@state_change_trigger(Nyx.battery, Nyx.climate, Tess.battery, Tess.climate)
+@state_change_trigger(Nyx.battery, Tess.battery, Nyx.charger, Tess.charger)
 def update_complication_outer(state_change: StateChangeEvent) -> None:
     complication, vehicle = get_complication_and_vehicle(state_change.entity_id)
     text = vehicle.battery.state
-    if vehicle.climate.state == vehicle.climate.HVACMode.HEAT_COOL:
-        setpoint = vehicle.climate.temperature
-        inside_temp = vehicle.climate.current_temperature
-        if setpoint == inside_temp:
-            text += "❄️" if setpoint <= int(vehicle.temperature_outside.state) else "♨️"
-        else:
-            text += "❄️" if setpoint <= inside_temp else "♨️"
-    else:
-        text += "%"
+    text += "⚡️" if vehicle.charger.state == "on" else "%"
     complication.outer = text
 
 
