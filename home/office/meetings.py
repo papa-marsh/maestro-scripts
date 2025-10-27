@@ -37,7 +37,10 @@ def meeting_active(state_change: StateChangeEvent) -> None:
 
 @event_fired_trigger("office_leds")
 def toggle_office_leds() -> None:
-    switch.office_door_led.toggle()
+    if maestro.meeting_active.state == "off":
+        maestro.meeting_active.state = "on"
+    else:
+        maestro.meeting_active.state = "off"
 
 
 @state_change_trigger(person.emily, to_state="home")
