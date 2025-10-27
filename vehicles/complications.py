@@ -15,8 +15,8 @@ from scripts.custom_domains import AppleWatchComplication
 from .common import Nyx, Tess
 
 
-@hass_trigger(HassEvent.STARTUP)
-@maestro_trigger(MaestroEvent.STARTUP_NOT_WORKING_YET)
+@hass_trigger(HassEvent.STARTUP_NOT_WORKING_YET)
+@maestro_trigger(MaestroEvent.STARTUP)
 def initialize_complication_entities() -> None:
     gauge_text = AppleWatchComplication.GaugeText(
         leading="",
