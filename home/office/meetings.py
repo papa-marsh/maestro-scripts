@@ -1,6 +1,6 @@
 from contextlib import suppress
 
-from maestro.integrations import EntityId, StateChangeEvent, StateManager
+from maestro.integrations import EntityId, StateManager
 from maestro.registry import maestro, person, switch
 from maestro.triggers import (
     HassEvent,
@@ -25,22 +25,16 @@ def initialize_meeting_active_entity() -> None:
         )
 
 
-@state_change_trigger(maestro.meeting_active)
-def meeting_active(state_change: StateChangeEvent) -> None:
-    if state_change.new.state == "on":
+@event_fired_trigger("meeting_active")
+def toggle_meeting_active() -> None:
+    if maestro.meeting_active.state == "off":
+        maestro.meeting_active.state = "on"
         switch.office_door_led.turn_on()
         if person.emily.state == "home":
             send_meeting_notification()
     else:
-        switch.office_door_led.turn_off()
-
-
-@event_fired_trigger("office_leds")
-def toggle_office_leds() -> None:
-    if maestro.meeting_active.state == "off":
-        maestro.meeting_active.state = "on"
-    else:
         maestro.meeting_active.state = "off"
+        switch.office_door_led.turn_off()
 
 
 @state_change_trigger(person.emily, to_state="home")
