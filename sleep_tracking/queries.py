@@ -21,7 +21,7 @@ def get_last_event() -> SleepEvent:
         this_morning_at_midnight = local_now().replace(hour=0, minute=0, second=0, microsecond=0)
         latest_event = SleepEvent(timestamp=this_morning_at_midnight, wakeup=False)
 
-    if not isinstance(latest_event, SleepEvent):
+    if not isinstance(latest_event, SleepEvent) or not isinstance(latest_event.timestamp, datetime):
         raise TypeError
 
     if latest_event.timestamp.tzinfo is None:
