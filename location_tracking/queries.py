@@ -12,7 +12,7 @@ PREV_ARRIVAL_KEY_PREFIX = "PREV_ZONE_ARRIVAL"
 
 def get_last_left_home(event: "ZoneChangeEvent") -> datetime | None:
     redis = event.person.state_manager.redis_client
-    last_left_home_key = redis.build_key(LAST_LEFT_HOME_KEY_PREFIX, event.person.id)
+    last_left_home_key = redis.build_key(LAST_LEFT_HOME_KEY_PREFIX, event.person.id.entity)
 
     timestamp_string = redis.get(key=last_left_home_key)
 
@@ -21,7 +21,7 @@ def get_last_left_home(event: "ZoneChangeEvent") -> datetime | None:
 
 def set_last_left_home(event: "ZoneChangeEvent") -> None:
     redis = event.person.state_manager.redis_client
-    last_left_home_key = redis.build_key(LAST_LEFT_HOME_KEY_PREFIX, event.person.id)
+    last_left_home_key = redis.build_key(LAST_LEFT_HOME_KEY_PREFIX, event.person.id.entity)
 
     redis.set(
         key=last_left_home_key,

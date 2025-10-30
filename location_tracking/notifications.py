@@ -65,6 +65,9 @@ def location_update_orchestrator(state_change: StateChangeEvent) -> None:
 
     scheduler.cancel_job(job_id)
 
+    if event.old_zone == "home":
+        set_last_left_home(event)
+
     if event.debounce == timedelta():
         send_location_update(event)
         return
@@ -82,29 +85,25 @@ def send_location_update(event: ZoneChangeEvent) -> None:
         message = f"{event.name} arrived at {event.new_zone_full}"
 
         if event.new_zone == "home" and (left_home := get_last_left_home(event)):
-            duration = format_duration(event.timestamp - left_home)
-            message += f" after {duration}"
+            duration = event.timestamp - left_home
+            message += f" after {format_duration(duration)}"
             Notif(
-                title="New Zone Tracking",  # TODO: Remvoe
                 message=f"You were away for {duration}",
                 group=NOTIF_IDENTIFIER,
-                # ).send(event.person)
-            ).send(person.marshall)
+            ).send(event.person)
 
     elif not event.old_zone_is_region:
         message = f"{event.name} left {event.old_zone_full}"
 
-        if event.old_zone == "home":
-            set_last_left_home(event)
+        if prev_zone_arrival_time := get_last_zone_arrival(event):
+            duration = event.timestamp - prev_zone_arrival_time
+            message += f" after {format_duration(duration)}"
 
-        elif prev_zone_arrival_time := get_last_zone_arrival(event):
-            time_at_zone = format_duration(event.timestamp - prev_zone_arrival_time)
-            Notif(
-                title="New Zone Tracking",  # TODO: Remvoe
-                message=f"You spent {time_at_zone} at {event.old_zone_full}",
-                group=NOTIF_IDENTIFIER,
-                # ).send(event.person)
-            ).send(person.marshall)
+            if event.old_zone != "home" and duration > timedelta(minutes=10):
+                Notif(
+                    message=f"You spent {format_duration(duration)} at {event.old_zone_full}",
+                    group=NOTIF_IDENTIFIER,
+                ).send(event.person)
 
     elif event.new_zone != "not_home":
         message = f"{event.name} is in {event.new_zone_full}"
@@ -115,8 +114,6 @@ def send_location_update(event: ZoneChangeEvent) -> None:
     set_last_zone_arrival(event)
 
     Notif(
-        title="New Zone Tracking",  # TODO: Remvoe
         message=message,
         group=NOTIF_IDENTIFIER,
-        # ).send(event.spouse)
-    ).send(person.marshall)
+    ).send(event.spouse)
