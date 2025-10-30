@@ -1,13 +1,16 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from maestro.utils import IntervalSeconds
-from scripts.location_tracking.notifications import ZoneChangeEvent
+
+if TYPE_CHECKING:
+    from scripts.location_tracking.notifications import ZoneChangeEvent
 
 LAST_LEFT_HOME_KEY_PREFIX = "LAST_LEFT_HOME"
 PREV_ARRIVAL_KEY_PREFIX = "PREV_ZONE_ARRIVAL"
 
 
-def get_last_left_home(event: ZoneChangeEvent) -> datetime | None:
+def get_last_left_home(event: "ZoneChangeEvent") -> datetime | None:
     redis = event.person.state_manager.redis_client
     last_left_home_key = redis.build_key(LAST_LEFT_HOME_KEY_PREFIX, event.person.id)
 
@@ -16,7 +19,7 @@ def get_last_left_home(event: ZoneChangeEvent) -> datetime | None:
     return datetime.fromisoformat(timestamp_string) if timestamp_string else None
 
 
-def set_last_left_home(event: ZoneChangeEvent) -> None:
+def set_last_left_home(event: "ZoneChangeEvent") -> None:
     redis = event.person.state_manager.redis_client
     last_left_home_key = redis.build_key(LAST_LEFT_HOME_KEY_PREFIX, event.person.id)
 
@@ -27,7 +30,7 @@ def set_last_left_home(event: ZoneChangeEvent) -> None:
     )
 
 
-def get_last_zone_arrival(event: ZoneChangeEvent) -> datetime | None:
+def get_last_zone_arrival(event: "ZoneChangeEvent") -> datetime | None:
     redis = event.person.state_manager.redis_client
     prev_arrival_key = redis.build_key(PREV_ARRIVAL_KEY_PREFIX, event.person.id)
 
@@ -36,7 +39,7 @@ def get_last_zone_arrival(event: ZoneChangeEvent) -> datetime | None:
     return datetime.fromisoformat(timestamp_string) if timestamp_string else None
 
 
-def set_last_zone_arrival(event: ZoneChangeEvent) -> None:
+def set_last_zone_arrival(event: "ZoneChangeEvent") -> None:
     redis = event.person.state_manager.redis_client
     prev_arrival_key = redis.build_key(PREV_ARRIVAL_KEY_PREFIX, event.person.id)
 
