@@ -7,7 +7,7 @@ from maestro.triggers import cron_trigger, state_change_trigger
 log = get_logger()
 
 
-@cron_trigger(hour=17)
+@cron_trigger(hour=17, minute=30)
 def ellie_bedtime_prep() -> None:
     switch.ellies_sound_machine.turn_on()
 
