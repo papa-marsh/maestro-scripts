@@ -7,7 +7,7 @@ from maestro.integrations import FiredEvent
 from maestro.registry import person
 from maestro.triggers import event_fired_trigger
 from maestro.utils import Notif, format_duration, local_now
-from scripts.utils.secrets import USER_ID_TO_PERSON
+from scripts.config.secrets import USER_ID_TO_PERSON
 
 from .queries import (
     delete_last_event,
