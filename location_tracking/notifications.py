@@ -26,10 +26,10 @@ class ZoneChangeEvent:
     timestamp: datetime
     old_zone: str
     old_zone_is_region: bool
-    old_zone_prefix: str
+    old_zone_full: str
     new_zone: str
     new_zone_is_region: bool
-    new_zone_prefix: str
+    new_zone_full: str
     debounce: timedelta
 
 
@@ -49,10 +49,10 @@ def build_zone_change_event(state_change: StateChangeEvent) -> ZoneChangeEvent:
         timestamp=state_change.time_fired,
         old_zone=state_change.old.state,
         old_zone_is_region=old_metadata.region,
-        old_zone_prefix=old_metadata.prefix,
+        old_zone_full=f"{old_metadata.prefix} {state_change.old.state}".lstrip(),
         new_zone=state_change.new.state,
         new_zone_is_region=new_metadata.region,
-        new_zone_prefix=new_metadata.prefix,
+        new_zone_full=f"{new_metadata.prefix} {state_change.new.state}".lstrip(),
         debounce=new_metadata.debounce,
     )
 
@@ -79,7 +79,7 @@ def location_update_orchestrator(state_change: StateChangeEvent) -> None:
 
 def send_location_update(event: ZoneChangeEvent) -> None:
     if not event.new_zone_is_region:
-        message = f"{event.name} arrived at {event.new_zone_prefix} {event.new_zone}"
+        message = f"{event.name} arrived at {event.new_zone_full}"
 
         if event.new_zone == "home" and (left_home := get_last_left_home(event)):
             duration = format_duration(event.timestamp - left_home)
@@ -92,7 +92,7 @@ def send_location_update(event: ZoneChangeEvent) -> None:
             ).send(person.marshall)
 
     elif not event.old_zone_is_region:
-        message = f"{event.name} left {event.old_zone_prefix} {event.old_zone}"
+        message = f"{event.name} left {event.old_zone_full}"
 
         if event.old_zone == "home":
             set_last_left_home(event)
@@ -101,16 +101,16 @@ def send_location_update(event: ZoneChangeEvent) -> None:
             time_at_zone = format_duration(event.timestamp - prev_zone_arrival_time)
             Notif(
                 title="New Zone Tracking",  # TODO: Remvoe
-                message=f"You spent {time_at_zone} at {event.old_zone_prefix} {event.old_zone}",
+                message=f"You spent {time_at_zone} at {event.old_zone_full}",
                 group=NOTIF_IDENTIFIER,
                 # ).send(event.person)
             ).send(person.marshall)
 
     elif event.new_zone != "not_home":
-        message = f"{event.name} is in {event.new_zone_prefix} {event.new_zone}"
+        message = f"{event.name} is in {event.new_zone_full}"
 
     else:
-        message = f"{event.name} left {event.old_zone_prefix} {event.old_zone}"
+        message = f"{event.name} left {event.old_zone_full}"
 
     set_last_zone_arrival(event)
 
