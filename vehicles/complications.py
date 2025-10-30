@@ -58,18 +58,14 @@ def get_complication_and_vehicle(entity_id: EntityId) -> tuple[VehicleComplicati
 def update_complication(state_change: StateChangeEvent) -> None:
     complication, vehicle = get_complication_and_vehicle(state_change.entity_id)
 
-    gauge_text = AppleWatchComplication.GaugeText(
+    attributes = AppleWatchComplication.GaugeText(
         leading=get_leading(vehicle),
         outer=get_outer(vehicle),
         trailing=get_trailing(vehicle),
         gauge=get_gauge(vehicle),
     )
 
-    StateManager().upsert_hass_entity(
-        entity_id=complication.id,
-        state=local_now().isoformat(),
-        attributes=dict(gauge_text),
-    )
+    complication.update(attributes)
 
 
 def get_leading(vehicle: VehicleT) -> str:
