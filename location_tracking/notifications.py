@@ -1,17 +1,19 @@
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 
-from maestro.app import db
-from maestro.config import TIMEZONE
 from maestro.domains import Person
 from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import state_change_trigger
-from maestro.utils import IntervalSeconds, Notif, format_duration
+from maestro.utils import Notif, format_duration
 from scripts.custom_domains import ZoneExtended
-from scripts.location_tracking.models import ZoneChange
+from scripts.location_tracking.queries import (
+    get_last_left_home,
+    get_last_zone_arrival,
+    set_last_left_home,
+    set_last_zone_arrival,
+)
 
-LAST_LEFT_HOME_KEY_PREFIX = "LAST_LEFT_HOME"
 NOTIF_IDENTIFIER = "zone_update"
 
 
@@ -28,47 +30,6 @@ class ZoneChangeEvent:
     new_zone_is_region: bool
     new_zone_prefix: str
     debounce: timedelta
-
-
-# @state_change_trigger(person.marshall, person.emily)
-def send_location_update(state_change: StateChangeEvent) -> None:
-    event = build_zone_change_event(state_change)
-
-    if not event.new_zone_is_region:
-        message = f"{event.name} arrived at {event.new_zone_prefix} {event.new_zone}"
-
-        if event.new_zone == "home" and (left_home := get_last_left_home(event)):
-            duration = format_duration(event.timestamp - left_home)
-            message += f" after {duration}"
-            Notif(
-                message=f"You were away for {duration}",
-                group=NOTIF_IDENTIFIER,
-            ).send(event.person)
-
-    elif not event.old_zone_is_region:
-        message = f"{event.name} left {event.old_zone_prefix} {event.old_zone}"
-
-        if event.old_zone == "home":
-            set_last_left_home(event)
-
-        prev_zone_arrival_time = get_last_zone_arrival(event.old_zone)
-        if event.old_zone != "home" and prev_zone_arrival_time:
-            time_at_zone = format_duration(event.timestamp - prev_zone_arrival_time)
-            Notif(
-                message=f"You spent {time_at_zone} at {event.old_zone_prefix} {event.old_zone}",
-                group=NOTIF_IDENTIFIER,
-            ).send(event.person)
-
-    elif event.new_zone != "not_home":
-        message = f"{event.name} is in {event.new_zone_prefix} {event.new_zone}"
-
-    else:
-        message = f"{event.name} left {event.old_zone_prefix} {event.old_zone}"
-
-    Notif(
-        message=message,
-        group=NOTIF_IDENTIFIER,
-    ).send(event.spouse)
 
 
 def build_zone_change_event(state_change: StateChangeEvent) -> ZoneChangeEvent:
@@ -95,41 +56,49 @@ def build_zone_change_event(state_change: StateChangeEvent) -> ZoneChangeEvent:
     )
 
 
-def get_last_left_home(event: ZoneChangeEvent) -> datetime | None:
-    redis = event.person.state_manager.redis_client
-    last_left_home_key = redis.build_key(LAST_LEFT_HOME_KEY_PREFIX, event.person.id)
+@state_change_trigger(person.marshall, person.emily)
+def send_location_update(state_change: StateChangeEvent) -> None:
+    event = build_zone_change_event(state_change)
 
-    timestamp_string = redis.get(key=last_left_home_key)
+    if not event.new_zone_is_region:
+        message = f"{event.name} arrived at {event.new_zone_prefix} {event.new_zone}"
 
-    return datetime.fromisoformat(timestamp_string) if timestamp_string else None
+        if event.new_zone == "home" and (left_home := get_last_left_home(event)):
+            duration = format_duration(event.timestamp - left_home)
+            message += f" after {duration}"
+            Notif(
+                title="New Zone Tracking",  # TODO: Remvoe
+                message=f"You were away for {duration}",
+                group=NOTIF_IDENTIFIER,
+                # ).send(event.person)
+            ).send(person.marshall)
 
+    elif not event.old_zone_is_region:
+        message = f"{event.name} left {event.old_zone_prefix} {event.old_zone}"
 
-def set_last_left_home(event: ZoneChangeEvent) -> None:
-    redis = event.person.state_manager.redis_client
-    last_left_home_key = redis.build_key(LAST_LEFT_HOME_KEY_PREFIX, event.person.id)
+        if event.old_zone == "home":
+            set_last_left_home(event)
 
-    redis.set(
-        key=last_left_home_key,
-        value=event.timestamp.isoformat(),
-        ttl_seconds=IntervalSeconds.THIRTY_DAYS,
-    )
+        elif prev_zone_arrival_time := get_last_zone_arrival(event):
+            time_at_zone = format_duration(event.timestamp - prev_zone_arrival_time)
+            Notif(
+                title="New Zone Tracking",  # TODO: Remvoe
+                message=f"You spent {time_at_zone} at {event.old_zone_prefix} {event.old_zone}",
+                group=NOTIF_IDENTIFIER,
+                # ).send(event.person)
+            ).send(person.marshall)
 
+    elif event.new_zone != "not_home":
+        message = f"{event.name} is in {event.new_zone_prefix} {event.new_zone}"
 
-def get_last_zone_arrival(zone_name: str) -> datetime | None:
-    zone_change: ZoneChange | None = (
-        db.session.query(ZoneChange)
-        .filter(ZoneChange.zone_name == zone_name)
-        .order_by(ZoneChange.arrived_at.desc())
-        .first()
-    )
-    if zone_change is None:
-        return None
+    else:
+        message = f"{event.name} left {event.old_zone_prefix} {event.old_zone}"
 
-    arrived_at = zone_change.arrived_at
-    if not isinstance(arrived_at, datetime):
-        raise TypeError
+    set_last_zone_arrival(event)
 
-    if arrived_at.tzinfo is None:
-        arrived_at = arrived_at.replace(tzinfo=UTC).astimezone(TIMEZONE)
-
-    return arrived_at
+    Notif(
+        title="New Zone Tracking",  # TODO: Remvoe
+        message=message,
+        group=NOTIF_IDENTIFIER,
+        # ).send(event.spouse)
+    ).send(person.marshall)
