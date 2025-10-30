@@ -5,7 +5,7 @@ from maestro.domains import Person
 from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import state_change_trigger
-from maestro.utils import Notif, format_duration
+from maestro.utils import JobScheduler, Notif, format_duration, local_now
 from scripts.custom_domains import ZoneExtended
 from scripts.location_tracking.queries import (
     get_last_left_home,
@@ -15,6 +15,7 @@ from scripts.location_tracking.queries import (
 )
 
 NOTIF_IDENTIFIER = "zone_update"
+JOB_ID_PREFIX = "zone_update_job_"
 
 
 @dataclass
@@ -57,9 +58,26 @@ def build_zone_change_event(state_change: StateChangeEvent) -> ZoneChangeEvent:
 
 
 @state_change_trigger(person.marshall, person.emily)
-def send_location_update(state_change: StateChangeEvent) -> None:
+def location_update_orchestrator(state_change: StateChangeEvent) -> None:
     event = build_zone_change_event(state_change)
+    scheduler = JobScheduler(redis_client=event.person.state_manager.redis_client)
+    job_id = JOB_ID_PREFIX + event.person.id.entity
 
+    scheduler.cancel_job(job_id)
+
+    if event.debounce == timedelta():
+        send_location_update(event)
+        return
+
+    scheduler.schedule_job(
+        run_time=local_now() + event.debounce,
+        func=send_location_update,
+        func_params={"event": event},
+        job_id=job_id,
+    )
+
+
+def send_location_update(event: ZoneChangeEvent) -> None:
     if not event.new_zone_is_region:
         message = f"{event.name} arrived at {event.new_zone_prefix} {event.new_zone}"
 
