@@ -14,6 +14,9 @@ from scripts.custom_domains import AppleWatchComplication
 
 from .common import Nyx, Tess
 
+VehicleComplicationT = maestro.MaestroNyxComplication | maestro.MaestroTessComplication
+VehicleT = type[Nyx] | type[Tess]
+
 
 @hass_trigger(HassEvent.STARTUP_NOT_WORKING_YET)
 @maestro_trigger(MaestroEvent.STARTUP)
@@ -35,50 +38,62 @@ def initialize_complication_entities() -> None:
             )
 
 
-def get_complication_and_vehicle(
-    entity_id: EntityId,
-) -> tuple[
-    maestro.MaestroNyxComplication | maestro.MaestroTessComplication,
-    type[Nyx] | type[Tess],
-]:
+def get_complication_and_vehicle(entity_id: EntityId) -> tuple[VehicleComplicationT, VehicleT]:
     if ".nyx_" in entity_id:
         return maestro.nyx_complication, Nyx
     else:
         return maestro.tess_complication, Tess
 
 
-@state_change_trigger(Nyx.battery, Tess.battery)
-def update_complication_leading(state_change: StateChangeEvent) -> None:
-    complication, _ = get_complication_and_vehicle(state_change.entity_id)
-    complication.leading = "🔒" if state_change.new.state == "locked" else ""
-
-
-@state_change_trigger(Nyx.climate, Tess.climate)
-def update_complication_trailing(state_change: StateChangeEvent) -> None:
+@state_change_trigger(
+    Nyx.battery,
+    Nyx.lock,
+    Nyx.climate,
+    Nyx.charger,
+    Tess.battery,
+    Tess.lock,
+    Tess.climate,
+    Tess.charger,
+)
+def update_complication(state_change: StateChangeEvent) -> None:
     complication, vehicle = get_complication_and_vehicle(state_change.entity_id)
 
+    gauge_text = AppleWatchComplication.GaugeText(
+        leading=get_leading(vehicle),
+        outer=get_outer(vehicle),
+        trailing=get_trailing(vehicle),
+        gauge=get_gauge(vehicle),
+    )
+
+    StateManager().upsert_hass_entity(
+        entity_id=complication.id,
+        state=local_now().isoformat(),
+        attributes=dict(gauge_text),
+    )
+
+
+def get_leading(vehicle: VehicleT) -> str:
+    return "🔒" if vehicle.lock.state == "locked" else ""
+
+
+def get_trailing(vehicle: VehicleT) -> str:
     if vehicle.climate.state != vehicle.climate.HVACMode.HEAT_COOL:
-        complication.trailing = ""
-        return
+        return ""
 
     setpoint = vehicle.climate.temperature
     inside_temp = vehicle.climate.current_temperature
     if setpoint == inside_temp:
         outside_temp = int(vehicle.temperature_outside.state)
-        complication.trailing = "❄️" if setpoint <= outside_temp else "♨️"
+        return "❄️" if setpoint <= outside_temp else "♨️"
     else:
-        complication.trailing = "❄️" if setpoint <= inside_temp else "♨️"
+        return "❄️" if setpoint <= inside_temp else "♨️"
 
 
-@state_change_trigger(Nyx.battery, Tess.battery, Nyx.charger, Tess.charger)
-def update_complication_outer(state_change: StateChangeEvent) -> None:
-    complication, vehicle = get_complication_and_vehicle(state_change.entity_id)
-    text = vehicle.battery.state
-    text += "⚡️" if vehicle.charger.state == "on" else "%"
-    complication.outer = text
+def get_outer(vehicle: VehicleT) -> str:
+    outer = vehicle.battery.state
+    outer += "⚡️" if vehicle.charger.state == "on" else "%"
+    return outer
 
 
-@state_change_trigger(Nyx.charger, Tess.charger)
-def update_complication_gauge(state_change: StateChangeEvent) -> None:
-    complication, vehicle = get_complication_and_vehicle(state_change.entity_id)
-    complication.gauge = float(vehicle.battery.state) / float(vehicle.charge_limit.state)
+def get_gauge(vehicle: VehicleT) -> float:
+    return float(vehicle.battery.state) / float(vehicle.charge_limit.state)
