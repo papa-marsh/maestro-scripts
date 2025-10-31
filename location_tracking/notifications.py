@@ -88,7 +88,7 @@ def send_location_update(event: ZoneChangeEvent) -> None:
             duration = event.timestamp - left_home
             message += f" after {format_duration(duration)}"
             Notif(
-                message=f"You were away for {duration}",
+                message=f"You were away for {format_duration(duration)}",
                 group=NOTIF_IDENTIFIER,
             ).send(event.person)
 
