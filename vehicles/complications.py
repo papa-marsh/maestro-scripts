@@ -79,7 +79,7 @@ def get_trailing(vehicle: VehicleT) -> str:
     setpoint = vehicle.climate.temperature
     inside_temp = vehicle.climate.current_temperature
     if setpoint == inside_temp:
-        outside_temp = int(vehicle.temperature_outside.state)
+        outside_temp = float(vehicle.temperature_outside.state)
         return "❄️" if setpoint <= outside_temp else "♨️"
     else:
         return "❄️" if setpoint <= inside_temp else "♨️"

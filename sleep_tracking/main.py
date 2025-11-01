@@ -17,7 +17,7 @@ from .queries import (
     save_sleep_event,
 )
 
-FALSE_ALARM_THRESHOLD = timedelta(minutes=15)
+FALSE_ALARM_THRESHOLD = timedelta(minutes=20)
 
 NOTIF_TITLE = "Sleep Tracker"
 NOTIF_ID = "sleep_tracker"
