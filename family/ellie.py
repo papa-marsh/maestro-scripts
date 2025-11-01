@@ -1,10 +1,6 @@
-from structlog.stdlib import get_logger
-
 from maestro.integrations import StateChangeEvent
 from maestro.registry import switch
 from maestro.triggers import cron_trigger, state_change_trigger
-
-log = get_logger()
 
 
 @cron_trigger(hour=17, minute=30)

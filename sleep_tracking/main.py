@@ -1,7 +1,5 @@
 from datetime import timedelta
 
-from structlog.stdlib import get_logger
-
 from maestro.domains import Person
 from maestro.integrations import FiredEvent
 from maestro.registry import person
@@ -21,8 +19,6 @@ FALSE_ALARM_THRESHOLD = timedelta(minutes=20)
 
 NOTIF_TITLE = "Sleep Tracker"
 NOTIF_ID = "sleep_tracker"
-
-log = get_logger()
 
 
 def sleep_tracker_notify(
