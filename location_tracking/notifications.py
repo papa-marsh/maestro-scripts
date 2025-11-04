@@ -60,7 +60,7 @@ def build_zone_change_event(state_change: StateChangeEvent) -> ZoneChangeEvent:
 @state_change_trigger(person.marshall, person.emily)
 def location_update_orchestrator(state_change: StateChangeEvent) -> None:
     event = build_zone_change_event(state_change)
-    scheduler = JobScheduler(redis_client=event.person.state_manager.redis_client)
+    scheduler = JobScheduler()
     job_id = JOB_ID_PREFIX + event.person.id.entity
 
     scheduler.cancel_job(job_id)
