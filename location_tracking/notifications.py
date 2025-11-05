@@ -63,21 +63,24 @@ def location_update_orchestrator(state_change: StateChangeEvent) -> None:
     scheduler = JobScheduler()
     job_id = JOB_ID_PREFIX + event.person.id.entity
 
-    scheduler.cancel_job(job_id)
-
     if event.old_zone == "home":
         set_last_left_home(event)
 
-    if event.debounce == timedelta():
-        send_location_update(event)
-        return
+    if debounced_job := scheduler.get_job(job_id):
+        scheduler.cancel_job(job_id)
+        debounced_event: ZoneChangeEvent = debounced_job.kwargs.get(event)
+        if event.old_zone == debounced_event.new_zone:
+            return
 
-    scheduler.schedule_job(
-        run_time=local_now() + event.debounce,
-        func=send_location_update,
-        func_params={"event": event},
-        job_id=job_id,
-    )
+    if event.debounce:
+        scheduler.schedule_job(
+            run_time=local_now() + event.debounce,
+            func=send_location_update,
+            func_params={"event": event},
+            job_id=job_id,
+        )
+    else:
+        send_location_update(event)
 
 
 def send_location_update(event: ZoneChangeEvent) -> None:
