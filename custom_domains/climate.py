@@ -22,15 +22,15 @@ class Thermostat(Climate):
 
     @override
     def set_fan_mode(self, mode: FanMode) -> None:  # type:ignore[override]
-        self.perform_action("set_fan_mode", mode=mode)
+        self.perform_action("set_fan_mode", fan_mode=mode)
 
     @override
     def set_hvac_mode(self, mode: HVACMode) -> None:  # type:ignore[override]
-        self.perform_action("set_hvac_mode", mode=mode)
+        self.perform_action("set_hvac_mode", hvac_mode=mode)
 
     @override
     def set_preset_mode(self, mode: PresetMode) -> None:  # type:ignore[override]
-        self.perform_action("set_preset_mode", mode=mode)
+        self.perform_action("set_preset_mode", preset_mode=mode)
 
 
 class BathroomFloor(Climate):
@@ -45,11 +45,11 @@ class BathroomFloor(Climate):
 
     @override
     def set_hvac_mode(self, mode: HVACMode) -> None:  # type:ignore[override]
-        self.perform_action("set_hvac_mode", mode=mode)
+        self.perform_action("set_hvac_mode", hvac_mode=mode)
 
     @override
     def set_preset_mode(self, mode: PresetMode) -> None:  # type:ignore[override]
-        self.perform_action("set_preset_mode", mode=mode)
+        self.perform_action("set_preset_mode", preset_mode=mode)
 
 
 class TeslaHVAC(Climate):
@@ -70,12 +70,12 @@ class TeslaHVAC(Climate):
 
     @override
     def set_fan_mode(self, mode: FanMode) -> None:  # type:ignore[override]
-        self.perform_action("set_fan_mode", mode=mode)
+        self.perform_action("set_fan_mode", fan_mode=mode)
 
     @override
     def set_hvac_mode(self, mode: HVACMode) -> None:  # type:ignore[override]
-        self.perform_action("set_hvac_mode", mode=mode)
+        self.perform_action("set_hvac_mode", hvac_mode=mode)
 
     @override
     def set_preset_mode(self, mode: PresetMode) -> None:  # type:ignore[override]
-        self.perform_action("set_preset_mode", mode=mode)
+        self.perform_action("set_preset_mode", preset_mode=mode)
