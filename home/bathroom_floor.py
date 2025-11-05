@@ -1,19 +1,20 @@
 from datetime import timedelta
 
-from maestro.domains.person import Person
-from maestro.integrations.home_assistant.types import FiredEvent
-from maestro.registry import climate
-from maestro.triggers import event_fired_trigger
-from maestro.utils.dates import IntervalSeconds, local_now
-from maestro.utils.push import Notif
-from maestro.utils.scheduler import JobScheduler
+from maestro.domains import Person
+from maestro.integrations import FiredEvent, StateChangeEvent
+from maestro.registry import climate, person
+from maestro.triggers import event_fired_trigger, state_change_trigger
+from maestro.utils import JobScheduler, Notif, format_duration, local_now
 from scripts.config.secrets import USER_ID_TO_PERSON
+from scripts.custom_domains import BathroomFloor
 
-HEAT_DURATION = timedelta(seconds=IntervalSeconds.NINETY_MINUTES)
 HEAT_TEMPERATURE = 85
+HEAT_DURATION = timedelta(minutes=90)
+AUTO_SHUTOFF_TIME = timedelta(hours=3)
 
 TEMPERATURE_CHECK_JOB_ID = "bathroom_floor_check_temp"
 TURN_OFF_HEAT_JOB_ID = "bathroom_floor_turn_off_heat"
+AUTO_SHUTOFF_JOB_ID = "bathroom_floor_auto_shutoff"
 
 
 @event_fired_trigger("bathroom_floor")
@@ -21,7 +22,7 @@ def heat_bathroom_floor(event: FiredEvent) -> None:
     now = local_now()
     caller = USER_ID_TO_PERSON[str(event.user_id)]
 
-    climate.bathroom_floor_thermostat.set_temperature(85)
+    climate.bathroom_floor_thermostat.set_temperature(HEAT_TEMPERATURE)
 
     scheduler = JobScheduler()
 
@@ -34,15 +35,13 @@ def heat_bathroom_floor(event: FiredEvent) -> None:
 
     scheduler.schedule_job(
         run_time=now + HEAT_DURATION,
-        func=check_floor_temp,
-        func_params={"caller": caller},
-        job_id=TEMPERATURE_CHECK_JOB_ID,
+        func=reset_floor_to_auto,
+        job_id=TURN_OFF_HEAT_JOB_ID,
     )
 
 
 def reset_floor_to_auto() -> None:
-    bathroom_floor = climate.bathroom_floor_thermostat
-    bathroom_floor.set_preset_mode(bathroom_floor.PresetMode.RUN_SCHEDULE)
+    climate.bathroom_floor_thermostat.set_preset_mode(BathroomFloor.PresetMode.RUN_SCHEDULE)
 
 
 def check_floor_temp(caller: Person) -> None:
@@ -64,3 +63,18 @@ def check_floor_temp(caller: Person) -> None:
         priority=Notif.Priority.TIME_SENSITIVE,
         tag="heat_bathroom_floor",
     ).send(caller)
+
+
+@state_change_trigger(climate.bathroom_floor_thermostat)
+def bathroom_floor_timeout(state_change: StateChangeEvent) -> None:
+    if state_change.new.state == BathroomFloor.HVACMode.AUTO:
+        JobScheduler().cancel_job(AUTO_SHUTOFF_JOB_ID)
+        return
+
+    duration = format_duration(AUTO_SHUTOFF_TIME)
+    Notif(
+        title="Bathroom Floor Still On",
+        message=f"Auto shutoff triggered for bathroom floor after {duration}",
+        priority=Notif.Priority.TIME_SENSITIVE,
+    ).send(person.marshall)
+    reset_floor_to_auto()
