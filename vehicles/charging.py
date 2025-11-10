@@ -12,7 +12,7 @@ DEFAULT_CHARGE_LIMIT = 80
 def high_charge_limit(state_change: StateChangeEvent) -> None:
     vehicle = Nyx if state_change.entity_id == Nyx.charger.id else Tess
 
-    if int(vehicle.charge_limit.state) > DEFAULT_CHARGE_LIMIT:
+    if float(vehicle.charge_limit.state) > DEFAULT_CHARGE_LIMIT:
         name = vehicle.__name__
         Notif(
             title="High Charge Limit",
@@ -28,7 +28,7 @@ def charge_reminder() -> None:
 
         is_home = vehicle.location.state == "home"
         unplugged = vehicle.charger == "off"
-        low_battery = int(vehicle.battery.state) < int(vehicle.charge_limit.state) - 20
+        low_battery = float(vehicle.battery.state) < float(vehicle.charge_limit.state) - 20
 
         if is_home and unplugged and low_battery:
             Notif(
