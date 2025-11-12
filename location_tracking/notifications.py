@@ -68,7 +68,7 @@ def location_update_orchestrator(state_change: StateChangeEvent) -> None:
 
     if debounced_job := scheduler.get_job(job_id):
         scheduler.cancel_job(job_id)
-        debounced_event: ZoneChangeEvent = debounced_job.kwargs.get(event)
+        debounced_event: ZoneChangeEvent = debounced_job.kwargs.get("event")
         if event.old_zone == debounced_event.new_zone:
             return
 
