@@ -28,6 +28,10 @@ def get_process_id(entity_id: EntityId) -> str:
     return f"{PROCESS_ID_PREFIX}_{entity_id.entity}"
 
 
+def get_job_id(entity_id: EntityId, time: timedelta) -> str:
+    return f"{get_process_id(entity_id)}_{int(time.total_seconds())}"
+
+
 @state_change_trigger(*EXTERIOR_DOORS, to_state="on")
 def schedule_notifications(state_change: StateChangeEvent) -> None:
     scheduler = JobScheduler()
@@ -35,7 +39,7 @@ def schedule_notifications(state_change: StateChangeEvent) -> None:
     door = state_change.entity_id.resolve_entity()
 
     for time in NOTIFICATION_TIMES:
-        job_id = f"{get_process_id(state_change.entity_id)}_{int(time.total_seconds())}"
+        job_id = get_job_id(entity_id=state_change.entity_id, time=time)
         scheduler.schedule_job(
             run_time=now + time,
             func=send_notifications,
@@ -49,7 +53,7 @@ def cancel_notifications(state_change: StateChangeEvent) -> None:
     scheduler = JobScheduler()
 
     for time in NOTIFICATION_TIMES:
-        job_id = f"{get_process_id(state_change.entity_id)}_{time.total_seconds()}"
+        job_id = get_job_id(entity_id=state_change.entity_id, time=time)
         scheduler.cancel_job(job_id)
 
 
