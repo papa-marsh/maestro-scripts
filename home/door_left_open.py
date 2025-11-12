@@ -35,7 +35,7 @@ def schedule_notifications(state_change: StateChangeEvent) -> None:
     door = state_change.entity_id.resolve_entity()
 
     for time in NOTIFICATION_TIMES:
-        job_id = f"{get_process_id(state_change.entity_id)}_{time.total_seconds()}"
+        job_id = f"{get_process_id(state_change.entity_id)}_{int(time.total_seconds())}"
         scheduler.schedule_job(
             run_time=now + time,
             func=send_notifications,

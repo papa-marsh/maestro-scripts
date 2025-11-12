@@ -15,7 +15,7 @@ from scripts.location_tracking.queries import (
 )
 
 NOTIF_IDENTIFIER = "zone_update"
-JOB_ID_PREFIX = "zone_update_job_"
+JOB_ID_PREFIX = f"{NOTIF_IDENTIFIER}_job_"
 
 
 @dataclass
