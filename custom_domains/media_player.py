@@ -3,6 +3,8 @@ from maestro.integrations import Domain, EntityId
 
 
 class SonosSpeaker(MediaPlayer):
+    group_members: list[str]
+
     def join(self, members: list[EntityId]) -> None:
         self.perform_action("join", group_members=members)
 

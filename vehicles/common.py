@@ -1,3 +1,4 @@
+from maestro.integrations import EntityId
 from maestro.registry import (
     binary_sensor,
     button,
@@ -5,6 +6,7 @@ from maestro.registry import (
     cover,
     device_tracker,
     lock,
+    maestro,
     number,
     select,
     sensor,
@@ -14,7 +16,7 @@ from maestro.registry import (
 
 
 class Nyx:
-    watch_complication_id = "maestro.nyx_complication"
+    complication = maestro.nyx_complication
 
     charging = binary_sensor.nyx_charging
     charger = binary_sensor.nyx_charger
@@ -81,7 +83,7 @@ class Nyx:
 
 
 class Tess:
-    watch_complication_id = "maestro.tess_complication"
+    complication = maestro.tess_complication
 
     charging = binary_sensor.tess_charging
     charger = binary_sensor.tess_charger
@@ -145,3 +147,7 @@ class Tess:
     valet_mode = switch.tess_valet_mode
 
     software_update = update.tess_software_update
+
+
+def get_vehicle_config(entity_id: EntityId) -> type[Nyx] | type[Tess]:
+    return Tess if "tess" in entity_id else Nyx

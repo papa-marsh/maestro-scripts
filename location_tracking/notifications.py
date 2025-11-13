@@ -7,6 +7,7 @@ from maestro.registry import person
 from maestro.triggers import state_change_trigger
 from maestro.utils import JobScheduler, Notif, format_duration, local_now
 from scripts.custom_domains import ZoneExtended
+from scripts.family.people import get_person_config
 from scripts.location_tracking.queries import (
     get_last_left_home,
     get_last_zone_arrival,
@@ -112,7 +113,8 @@ def send_location_update(event: ZoneChangeEvent) -> None:
         message = f"{event.name} is in {event.new_zone_full}"
 
     else:
-        message = f"{event.name} left {event.old_zone_full}"
+        person_config = get_person_config(event.person.id)
+        message = f"{event.name} left {event.old_zone_full} near {person_config.location.state}"
 
     set_last_zone_arrival(event)
 

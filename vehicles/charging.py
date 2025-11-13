@@ -3,14 +3,14 @@ from maestro.registry import person
 from maestro.triggers import cron_trigger, state_change_trigger
 from maestro.utils import Notif
 
-from .common import Nyx, Tess
+from .common import Nyx, Tess, get_vehicle_config
 
 DEFAULT_CHARGE_LIMIT = 80
 
 
 @state_change_trigger(Nyx.charger, Tess.charger, to_state="on")
 def high_charge_limit(state_change: StateChangeEvent) -> None:
-    vehicle = Nyx if state_change.entity_id == Nyx.charger.id else Tess
+    vehicle = get_vehicle_config(state_change.entity_id)
 
     if float(vehicle.charge_limit.state) > DEFAULT_CHARGE_LIMIT:
         name = vehicle.__name__

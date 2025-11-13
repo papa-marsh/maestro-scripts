@@ -12,7 +12,7 @@ from maestro.triggers import (
 from maestro.utils import local_now
 from scripts.custom_domains import AppleWatchComplication
 
-from .common import Nyx, Tess
+from .common import Nyx, Tess, get_vehicle_config
 
 VehicleComplicationT = maestro.MaestroNyxComplication | maestro.MaestroTessComplication
 VehicleT = type[Nyx] | type[Tess]
@@ -31,7 +31,7 @@ def initialize_complication_entities() -> None:
     for vehicle in (Nyx, Tess):
         with suppress(FileExistsError):
             StateManager().upsert_hass_entity(
-                entity_id=EntityId(vehicle.watch_complication_id),
+                entity_id=vehicle.complication.id,
                 state=local_now().isoformat(),
                 attributes=dict(gauge_text),
                 create_only=True,
@@ -56,7 +56,7 @@ def get_complication_and_vehicle(entity_id: EntityId) -> tuple[VehicleComplicati
     Tess.charger,
 )
 def update_complication(state_change: StateChangeEvent) -> None:
-    complication, vehicle = get_complication_and_vehicle(state_change.entity_id)
+    vehicle = get_vehicle_config(state_change.entity_id)
 
     attributes = AppleWatchComplication.GaugeText(
         leading=get_leading(vehicle),
@@ -65,7 +65,7 @@ def update_complication(state_change: StateChangeEvent) -> None:
         gauge=get_gauge(vehicle),
     )
 
-    complication.update(attributes)
+    vehicle.complication.update(attributes)
 
 
 def get_leading(vehicle: VehicleT) -> str:
@@ -87,7 +87,7 @@ def get_trailing(vehicle: VehicleT) -> str:
 
 def get_outer(vehicle: VehicleT) -> str:
     outer = vehicle.battery.state
-    outer += "⚡️" if vehicle.charger.state == "on" else "%"
+    outer += "⚡️" if vehicle.charger.is_on else "%"
     return outer
 
 
