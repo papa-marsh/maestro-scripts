@@ -93,11 +93,7 @@ def olivia_info(event: FiredEvent) -> None:
     total_duration = format_duration(get_awake_time())
 
     state = "awake" if last_event.wakeup else "asleep"
-    message = (
-        f"Olivia has been {state} for {duration}\n"
-        "Long press for more\n\n"
-        f"Wake time today: {total_duration}"
-    )
+    message = f"Olivia has been {state} for {duration}\nWake time today: {total_duration}\n"
 
     for wake_window in get_wake_windows():
         start, end = wake_window
