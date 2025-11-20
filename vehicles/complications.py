@@ -18,7 +18,7 @@ VehicleComplicationT = maestro.MaestroNyxComplication | maestro.MaestroTessCompl
 VehicleT = type[Nyx] | type[Tess]
 
 
-@hass_trigger(HassEvent.STARTUP_NOT_WORKING_YET)
+@hass_trigger(HassEvent.STARTUP)
 @maestro_trigger(MaestroEvent.STARTUP)
 def initialize_complication_entities() -> None:
     gauge_text = AppleWatchComplication.GaugeText(

@@ -33,6 +33,7 @@ def get_job_id(entity_id: EntityId, time: timedelta) -> str:
 
 
 @state_change_trigger(*EXTERIOR_DOORS, to_state="on")
+@state_change_trigger(*GARAGE_STALLS, to_state="open")
 def schedule_notifications(state_change: StateChangeEvent) -> None:
     scheduler = JobScheduler()
     now = local_now()
@@ -49,6 +50,7 @@ def schedule_notifications(state_change: StateChangeEvent) -> None:
 
 
 @state_change_trigger(*EXTERIOR_DOORS, to_state="off")
+@state_change_trigger(*GARAGE_STALLS, to_state="closed")
 def cancel_notifications(state_change: StateChangeEvent) -> None:
     scheduler = JobScheduler()
 
@@ -67,7 +69,7 @@ def send_notifications(door: BinarySensor, duration: timedelta) -> None:
 
     Notif(
         title="Door Left Open",
-        message=f"The {friendly_name} has been open for {format_duration(duration)}",
+        message=f"{friendly_name} has been open for {format_duration(duration)}",
         group=PROCESS_ID_PREFIX,
         tag=get_process_id(door.id),
         actions=[silence_action],
