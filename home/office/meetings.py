@@ -12,12 +12,14 @@ from maestro.triggers import (
     state_change_trigger,
 )
 from maestro.utils import Notif
+from maestro.utils.exceptions import EntityOperationError
 
 
 @hass_trigger(HassEvent.STARTUP)
 @maestro_trigger(MaestroEvent.STARTUP)
 def initialize_meeting_active_entity() -> None:
-    with suppress(FileExistsError):
+    """Create the entity only if it doesn't already exist"""
+    with suppress(EntityOperationError):
         StateManager().upsert_hass_entity(
             entity_id=EntityId("maestro.meeting_active"),
             state=OFF,
