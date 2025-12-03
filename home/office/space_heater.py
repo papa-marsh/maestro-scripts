@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from maestro.domains import OFF, ON
 from maestro.registry import switch
 from maestro.triggers import state_change_trigger
 from maestro.utils import JobScheduler, local_now
@@ -11,7 +12,7 @@ def turn_off_space_heater() -> None:
     switch.space_heater.turn_off()
 
 
-@state_change_trigger(switch.space_heater, from_state="off", to_state="on")
+@state_change_trigger(switch.space_heater, from_state=OFF, to_state=ON)
 def space_heater_auto_off() -> None:
     two_hours_from_now = local_now() + timedelta(hours=2)
     JobScheduler().schedule_job(
@@ -21,6 +22,6 @@ def space_heater_auto_off() -> None:
     )
 
 
-@state_change_trigger(switch.space_heater, to_state="off")
+@state_change_trigger(switch.space_heater, to_state=OFF)
 def cancel_auto_off_job() -> None:
     JobScheduler().cancel_job(AUTO_OFF_JOB_ID)

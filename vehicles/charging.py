@@ -1,3 +1,4 @@
+from maestro.domains import HOME, OFF, ON
 from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import cron_trigger, state_change_trigger
@@ -8,7 +9,7 @@ from .common import Nyx, Tess, get_vehicle_config
 DEFAULT_CHARGE_LIMIT = 80
 
 
-@state_change_trigger(Nyx.charger, Tess.charger, to_state="on")
+@state_change_trigger(Nyx.charger, Tess.charger, to_state=ON)
 def high_charge_limit(state_change: StateChangeEvent) -> None:
     vehicle = get_vehicle_config(state_change.entity_id)
 
@@ -26,8 +27,8 @@ def charge_reminder() -> None:
     for vehicle in (Nyx, Tess):
         name = vehicle.__name__
 
-        is_home = vehicle.location.state == "home"
-        unplugged = vehicle.charger == "off"
+        is_home = vehicle.location.state == HOME
+        unplugged = vehicle.charger == OFF
         low_battery = float(vehicle.battery.state) < float(vehicle.charge_limit.state) - 20
 
         if is_home and unplugged and low_battery:

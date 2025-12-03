@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from maestro.domains import OFF
 from maestro.registry import person, zone
 from maestro.triggers import state_change_trigger
 from maestro.utils import JobScheduler, Notif, local_now
@@ -14,7 +15,7 @@ def sentry_reminder() -> None:
     """Reminder to turn off Sentry at the deprees after a 30 min debounce"""
 
     def send_reminder() -> None:
-        if Tess.sentry_mode.state == "off":
+        if Tess.sentry_mode.state == OFF:
             return
 
         Notif(

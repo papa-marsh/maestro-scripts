@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from maestro.domains import BinarySensor, Cover
+from maestro.domains import OFF, ON, BinarySensor, Cover
 from maestro.integrations import EntityId, StateChangeEvent
 from maestro.registry import binary_sensor, cover, person
 from maestro.triggers import state_change_trigger
@@ -32,7 +32,7 @@ def get_job_id(entity_id: EntityId, time: timedelta) -> str:
     return f"{get_process_id(entity_id)}_{int(time.total_seconds())}"
 
 
-@state_change_trigger(*EXTERIOR_DOORS, to_state="on")
+@state_change_trigger(*EXTERIOR_DOORS, to_state=ON)
 @state_change_trigger(*GARAGE_STALLS, to_state="open")
 def schedule_notifications(state_change: StateChangeEvent) -> None:
     scheduler = JobScheduler()
@@ -49,7 +49,7 @@ def schedule_notifications(state_change: StateChangeEvent) -> None:
         )
 
 
-@state_change_trigger(*EXTERIOR_DOORS, to_state="off")
+@state_change_trigger(*EXTERIOR_DOORS, to_state=OFF)
 @state_change_trigger(*GARAGE_STALLS, to_state="closed")
 def cancel_notifications(state_change: StateChangeEvent) -> None:
     scheduler = JobScheduler()

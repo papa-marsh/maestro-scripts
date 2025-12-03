@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from maestro.domains import Person
+from maestro.domains import AWAY, HOME, Person
 from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import state_change_trigger
@@ -64,7 +64,7 @@ def location_update_orchestrator(state_change: StateChangeEvent) -> None:
     scheduler = JobScheduler()
     job_id = JOB_ID_PREFIX + event.person.id.entity
 
-    if event.old_zone == "home":
+    if event.old_zone == HOME:
         set_last_left_home(event)
 
     if debounced_job := scheduler.get_job(job_id):
@@ -88,7 +88,7 @@ def send_location_update(event: ZoneChangeEvent) -> None:
     if not event.new_zone_is_region:
         message = f"{event.name} arrived at {event.new_zone_full}"
 
-        if event.new_zone == "home" and (left_home := get_last_left_home(event)):
+        if event.new_zone == HOME and (left_home := get_last_left_home(event)):
             duration = event.timestamp - left_home
             message += f" after {format_duration(duration)}"
             Notif(
@@ -103,13 +103,13 @@ def send_location_update(event: ZoneChangeEvent) -> None:
             duration = event.timestamp - prev_zone_arrival_time
             message += f" after {format_duration(duration)}"
 
-            if event.old_zone != "home" and duration > timedelta(minutes=10):
+            if event.old_zone != HOME and duration > timedelta(minutes=10):
                 Notif(
                     message=f"You spent {format_duration(duration)} at {event.old_zone_full}",
                     group=NOTIF_IDENTIFIER,
                 ).send(event.person)
 
-    elif event.new_zone != "not_home":
+    elif event.new_zone != AWAY:
         message = f"{event.name} is in {event.new_zone_full}"
 
     else:
