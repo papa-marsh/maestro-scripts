@@ -10,6 +10,7 @@ from maestro.triggers import (
     state_change_trigger,
 )
 from maestro.utils import local_now
+from maestro.utils.exceptions import EntityOperationError
 from scripts.custom_domains import AppleWatchComplication
 
 from .common import Nyx, Tess, get_vehicle_config
@@ -29,7 +30,7 @@ def initialize_complication_entities() -> None:
     )
 
     for vehicle in (Nyx, Tess):
-        with suppress(FileExistsError):
+        with suppress(EntityOperationError):
             StateManager().upsert_hass_entity(
                 entity_id=vehicle.complication.id,
                 state=local_now().isoformat(),
