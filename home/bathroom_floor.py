@@ -66,15 +66,24 @@ def check_floor_temp(caller: Person) -> None:
 
 
 @state_change_trigger(climate.bathroom_floor_thermostat)
-def bathroom_floor_timeout(state_change: StateChangeEvent) -> None:
+def bathroom_floor_timeout_handler(state_change: StateChangeEvent) -> None:
+    scheduler = JobScheduler()
+
     if state_change.new.state == BathroomFloor.HVACMode.AUTO:
-        JobScheduler().cancel_job(AUTO_SHUTOFF_JOB_ID)
+        scheduler.cancel_job(AUTO_SHUTOFF_JOB_ID)
         return
 
-    duration = format_duration(AUTO_SHUTOFF_TIME)
-    Notif(
-        title="Bathroom Floor Still On",
-        message=f"Auto shutoff triggered for bathroom floor after {duration}",
-        priority=Notif.Priority.TIME_SENSITIVE,
-    ).send(person.marshall)
-    reset_floor_to_auto()
+    def reset_after_timeout() -> None:
+        duration = format_duration(AUTO_SHUTOFF_TIME)
+        Notif(
+            title="Bathroom Floor Still On",
+            message=f"Auto shutoff triggered for bathroom floor after {duration}",
+            priority=Notif.Priority.TIME_SENSITIVE,
+        ).send(person.marshall)
+        reset_floor_to_auto()
+
+    scheduler.schedule_job(
+        run_time=local_now() + AUTO_SHUTOFF_TIME,
+        func=reset_after_timeout,
+        job_id=AUTO_SHUTOFF_JOB_ID,
+    )
