@@ -1,49 +1,11 @@
-from contextlib import suppress
-
-from maestro.integrations import EntityId, StateChangeEvent, StateManager
+from maestro.integrations import StateChangeEvent
 from maestro.registry import maestro
-from maestro.triggers import (
-    HassEvent,
-    MaestroEvent,
-    hass_trigger,
-    maestro_trigger,
-    state_change_trigger,
-)
-from maestro.utils import local_now
-from maestro.utils.exceptions import EntityOperationError
-from scripts.custom_domains import AppleWatchComplication
+from maestro.triggers import state_change_trigger
 
 from .common import Nyx, Tess, get_vehicle_config
 
 VehicleComplicationT = maestro.MaestroNyxComplication | maestro.MaestroTessComplication
 VehicleT = type[Nyx] | type[Tess]
-
-
-@hass_trigger(HassEvent.STARTUP)
-@maestro_trigger(MaestroEvent.STARTUP)
-def initialize_complication_entities() -> None:
-    gauge_text = AppleWatchComplication.GaugeText(
-        leading="",
-        outer="",
-        trailing="",
-        gauge=1.0,
-    )
-
-    for vehicle in (Nyx, Tess):
-        with suppress(EntityOperationError):
-            StateManager().upsert_hass_entity(
-                entity_id=vehicle.complication.id,
-                state=local_now().isoformat(),
-                attributes=dict(gauge_text),
-                create_only=True,
-            )
-
-
-def get_complication_and_vehicle(entity_id: EntityId) -> tuple[VehicleComplicationT, VehicleT]:
-    if ".nyx_" in entity_id:
-        return maestro.nyx_complication, Nyx
-    else:
-        return maestro.tess_complication, Tess
 
 
 @state_change_trigger(
@@ -59,14 +21,12 @@ def get_complication_and_vehicle(entity_id: EntityId) -> tuple[VehicleComplicati
 def update_complication(state_change: StateChangeEvent) -> None:
     vehicle = get_vehicle_config(state_change.entity_id)
 
-    attributes = AppleWatchComplication.GaugeText(
+    vehicle.complication.update(
+        trailing=get_trailing(vehicle),
         leading=get_leading(vehicle),
         outer=get_outer(vehicle),
-        trailing=get_trailing(vehicle),
         gauge=get_gauge(vehicle),
     )
-
-    vehicle.complication.update(attributes)
 
 
 def get_leading(vehicle: VehicleT) -> str:

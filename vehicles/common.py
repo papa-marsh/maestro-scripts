@@ -5,8 +5,8 @@ from maestro.registry import (
     climate,
     cover,
     device_tracker,
+    input_text,
     lock,
-    maestro,
     number,
     select,
     sensor,
@@ -16,7 +16,7 @@ from maestro.registry import (
 
 
 class Nyx:
-    complication = maestro.nyx_complication
+    complication = input_text.nyx_complication
 
     charging = binary_sensor.nyx_charging
     charger = binary_sensor.nyx_charger
@@ -83,7 +83,7 @@ class Nyx:
 
 
 class Tess:
-    complication = maestro.tess_complication
+    complication = input_text.tess_complication
 
     charging = binary_sensor.tess_charging
     charger = binary_sensor.tess_charger
