@@ -1,10 +1,8 @@
 from maestro.integrations import StateChangeEvent
-from maestro.registry import maestro
 from maestro.triggers import state_change_trigger
 
 from .common import Nyx, Tess, get_vehicle_config
 
-VehicleComplicationT = maestro.MaestroNyxComplication | maestro.MaestroTessComplication
 VehicleT = type[Nyx] | type[Tess]
 
 
