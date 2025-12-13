@@ -1,5 +1,5 @@
-from maestro.domains.entity import HOME, OFF, ON
-from maestro.integrations.home_assistant.domain import Domain
+from maestro.domains import HOME, OFF, ON
+from maestro.integrations import Domain
 from maestro.registry import person, zone
 from maestro.testing import MaestroTest
 from scripts.vehicles.common import Tess
@@ -9,19 +9,11 @@ from .. import sentry_reminder
 
 def test_reminder_job_gets_set_and_cancelled(mt: MaestroTest) -> None:
     # Job gets scheduler when Tess arrives at the deprees
-    mt.trigger_state_change(
-        Tess.location,
-        old=HOME,
-        new=zone.the_deprees.friendly_name,
-    )
-    mt.assert_job_scheduled(sentry_reminder.SENTRY_REMINDER_JOB_ID)
+    mt.trigger_state_change(Tess.location, new=zone.the_deprees.friendly_name)
+    mt.assert_job_scheduled(sentry_reminder.SENTRY_REMINDER_JOB_ID, sentry_reminder.send_reminder)
 
     # Test job gets cancelled when Tess leaves
-    mt.trigger_state_change(
-        Tess.location,
-        old=zone.the_deprees.friendly_name,
-        new=HOME,
-    )
+    mt.trigger_state_change(Tess.location, old=zone.the_deprees.friendly_name)
     mt.assert_job_not_scheduled(sentry_reminder.SENTRY_REMINDER_JOB_ID)
 
 

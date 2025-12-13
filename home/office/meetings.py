@@ -1,25 +1,17 @@
 from contextlib import suppress
 
 from maestro.domains import HOME, OFF, ON
-from maestro.integrations import EntityId, StateManager
+from maestro.integrations import EntityId, StateChangeEvent, StateManager
 from maestro.registry import maestro, person, switch
-from maestro.triggers import (
-    HassEvent,
-    MaestroEvent,
-    event_fired_trigger,
-    hass_trigger,
-    maestro_trigger,
-    state_change_trigger,
-)
+from maestro.triggers import HassEvent, event_fired_trigger, hass_trigger, state_change_trigger
 from maestro.utils import Notif
-from maestro.utils.exceptions import EntityOperationError
+from maestro.utils.exceptions import EntityAlreadyExistsError
 
 
 @hass_trigger(HassEvent.STARTUP)
-@maestro_trigger(MaestroEvent.STARTUP)
 def initialize_meeting_active_entity() -> None:
     """Create the entity only if it doesn't already exist"""
-    with suppress(EntityOperationError):
+    with suppress(EntityAlreadyExistsError):
         StateManager().upsert_hass_entity(
             entity_id=EntityId("maestro.meeting_active"),
             state=OFF,
@@ -32,18 +24,24 @@ def initialize_meeting_active_entity() -> None:
 def toggle_meeting_active() -> None:
     if maestro.meeting_active.state == OFF:
         maestro.meeting_active.state = ON
-        switch.office_door_led.turn_on()
         if person.emily.state == HOME:
             send_meeting_notification()
     else:
         maestro.meeting_active.state = OFF
-        switch.office_door_led.turn_off()
 
 
 @state_change_trigger(person.emily, to_state=HOME)
 def meeting_active_on_arrival() -> None:
     if maestro.meeting_active.state == ON:
         send_meeting_notification()
+
+
+@state_change_trigger(maestro.meeting_active)
+def toggle_door_leds(state_change: StateChangeEvent) -> None:
+    if state_change.new.state == ON:
+        switch.office_door_led.turn_on()
+    else:
+        switch.office_door_led.turn_off()
 
 
 def send_meeting_notification() -> None:

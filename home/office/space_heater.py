@@ -12,7 +12,7 @@ def turn_off_space_heater() -> None:
     switch.space_heater.turn_off()
 
 
-@state_change_trigger(switch.space_heater, from_state=OFF, to_state=ON)
+@state_change_trigger(switch.space_heater, to_state=ON)
 def space_heater_auto_off() -> None:
     two_hours_from_now = local_now() + timedelta(hours=2)
     JobScheduler().schedule_job(
