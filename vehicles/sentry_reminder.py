@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from maestro.domains import OFF
+from maestro.domains import ON
 from maestro.registry import person, zone
 from maestro.triggers import state_change_trigger
 from maestro.utils import JobScheduler, Notif, local_now
@@ -14,16 +14,6 @@ SENTRY_REMINDER_JOB_ID = "sentry_reminder_job_id"
 def sentry_reminder() -> None:
     """Reminder to turn off Sentry at the deprees after a 30 min debounce"""
 
-    def send_reminder() -> None:
-        if Tess.sentry_mode.state == OFF:
-            return
-
-        Notif(
-            title="Sentry Mode On",
-            message="Consider turning Sentry Mode off to conserve battery",
-            tag="turn_sentry_off_reminder",
-        ).send(person.marshall)
-
     JobScheduler().schedule_job(
         run_time=local_now() + timedelta(minutes=30),
         func=send_reminder,
@@ -34,3 +24,14 @@ def sentry_reminder() -> None:
 @state_change_trigger(Tess.location, from_state=zone.the_deprees.friendly_name)
 def cancel_reminder() -> None:
     JobScheduler().cancel_job(SENTRY_REMINDER_JOB_ID)
+
+
+def send_reminder() -> None:
+    if Tess.sentry_mode.state == ON:
+        return
+
+    Notif(
+        title="Sentry Mode On",
+        message="Consider turning Sentry Mode off to conserve battery",
+        tag="turn_sentry_off_reminder",
+    ).send(person.marshall)
