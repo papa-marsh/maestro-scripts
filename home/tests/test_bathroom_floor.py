@@ -9,12 +9,12 @@ from scripts.config.secrets import PERSON_TO_USER_ID
 from scripts.custom_domains import BathroomFloor
 from scripts.home.bathroom_floor import (
     AUTO_SHUTOFF_JOB_ID,
-    AUTO_SHUTOFF_TIME,
-    HEAT_DURATION,
     HEAT_TEMPERATURE,
     TEMPERATURE_CHECK_JOB_ID,
     TURN_OFF_HEAT_JOB_ID,
 )
+
+from .. import bathroom_floor
 
 
 def test_heat_bathroom_floor_schedules_jobs(maestro_test: MaestroTest) -> None:

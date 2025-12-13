@@ -12,7 +12,14 @@ class ZoneExtended(Zone):
         state_manager: StateManager | None = None,
     ):
         super().__init__(entity_id=entity_id, state_manager=state_manager)
-        self.metadata = self.get_zone_metadata(self.friendly_name)
+        self._metadata: ZoneMetadata | None = None
+
+    @property
+    def metadata(self) -> ZoneMetadata:
+        """Lazy-load metadata to avoid accessing state manager during module import"""
+        if self._metadata is None:
+            self._metadata = self.get_zone_metadata(self.friendly_name)
+        return self._metadata
 
     @classmethod
     def get_zone_metadata(cls, friendly_name: str) -> ZoneMetadata:
