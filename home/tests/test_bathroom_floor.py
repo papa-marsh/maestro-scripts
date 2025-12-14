@@ -1,6 +1,5 @@
-from maestro.domains import OFF, ON
 from maestro.integrations import Domain
-from maestro.registry import climate, person, switch
+from maestro.registry import climate, person
 from maestro.testing import MaestroTest
 from scripts.config.secrets import PERSON_TO_USER_ID
 from scripts.custom_domains import BathroomFloor
