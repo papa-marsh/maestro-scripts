@@ -1,12 +1,13 @@
 from maestro.domains.media_player import MediaPlayer
-from maestro.integrations import Domain, EntityId
+from maestro.integrations import Domain
 
 
 class SonosSpeaker(MediaPlayer):
     group_members: list[str]
 
-    def join(self, members: list[EntityId]) -> None:
-        self.perform_action("join", group_members=members)
+    def join(self, members: list["SonosSpeaker"]) -> None:
+        speaker_ids = [speaker.id for speaker in members]
+        self.perform_action("join", group_members=speaker_ids)
 
     def unjoin(self) -> None:
         self.perform_action("unjoin")

@@ -32,13 +32,11 @@ def reset_speakers() -> None:
 
 @state_change_trigger(*MAIN_SPEAKERS, to_state="playing")
 def group_speakers(state_change: StateChangeEvent) -> None:
-    target = media_player.living_room
-    if all(speaker.id in target.group_members for speaker in MAIN_SPEAKERS):
-        return
-
     target = state_change.entity_id.resolve_entity()
-
     if not isinstance(target, SonosSpeaker):
         raise TypeError
 
-    target.join([speaker.id for speaker in MAIN_SPEAKERS])
+    if all(speaker.id in target.group_members for speaker in MAIN_SPEAKERS):
+        return
+
+    target.join(MAIN_SPEAKERS)
