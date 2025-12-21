@@ -15,24 +15,15 @@ def save_zone_change(state_change: StateChangeEvent) -> None:
     zone_name = state_change.new.state
     arrival_time = state_change.time_fired
 
-    previous_zone_change: ZoneChange = (
+    previous_zone_change: ZoneChange | None = (
         db.session.query(ZoneChange)
         .filter(ZoneChange.person == entity_id)
         .order_by(ZoneChange.arrived_at.desc())
         .first()
     )
 
-    prev_arrival = previous_zone_change.arrived_at
-
-    if not isinstance(prev_arrival, datetime):
-        raise TypeError
-
-    if prev_arrival.tzinfo is None:
-        prev_arrival = prev_arrival.replace(tzinfo=UTC).astimezone(TIMEZONE)
-
     if previous_zone_change is not None:
-        duration = (arrival_time - prev_arrival).total_seconds()
-        previous_zone_change.duration_seconds = int(duration)
+        update_previous_zone_duration(previous_zone_change, arrival_time)
 
     new_zone_change = ZoneChange(
         person=entity_id,
@@ -43,3 +34,17 @@ def save_zone_change(state_change: StateChangeEvent) -> None:
 
     db.session.add(new_zone_change)
     db.session.commit()
+
+
+def update_previous_zone_duration(previous_zone_change: ZoneChange, arrival_time: datetime) -> None:
+    """Update the duration of the previous zone change based on the new arrival time."""
+    prev_arrival = previous_zone_change.arrived_at
+
+    if not isinstance(prev_arrival, datetime):
+        raise TypeError
+
+    if prev_arrival.tzinfo is None:
+        prev_arrival = prev_arrival.replace(tzinfo=UTC).astimezone(TIMEZONE)
+
+    duration = (arrival_time - prev_arrival).total_seconds()
+    previous_zone_change.duration_seconds = int(duration)

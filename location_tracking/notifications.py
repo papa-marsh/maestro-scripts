@@ -65,7 +65,7 @@ def location_update_orchestrator(state_change: StateChangeEvent) -> None:
     job_id = JOB_ID_PREFIX + event.person.id.entity
 
     if event.old_zone == HOME:
-        set_last_left_home(event)
+        set_last_left_home(person=event.person, value=event.timestamp)
 
     if debounced_job := scheduler.get_job(job_id):
         scheduler.cancel_job(job_id)
@@ -88,7 +88,7 @@ def send_location_update(event: ZoneChangeEvent) -> None:
     if not event.new_zone_is_region:
         message = f"{event.name} arrived at {event.new_zone_full}"
 
-        if event.new_zone == HOME and (left_home := get_last_left_home(event)):
+        if event.new_zone == HOME and (left_home := get_last_left_home(event.person)):
             duration = event.timestamp - left_home
             message += f" after {format_duration(duration)}"
             Notif(
@@ -99,7 +99,7 @@ def send_location_update(event: ZoneChangeEvent) -> None:
     elif not event.old_zone_is_region:
         message = f"{event.name} left {event.old_zone_full}"
 
-        if prev_zone_arrival_time := get_last_zone_arrival(event):
+        if prev_zone_arrival_time := get_last_zone_arrival(event.person):
             duration = event.timestamp - prev_zone_arrival_time
             message += f" after {format_duration(duration)}"
 
@@ -113,10 +113,11 @@ def send_location_update(event: ZoneChangeEvent) -> None:
         message = f"{event.name} is in {event.new_zone_full}"
 
     else:
-        person_config = get_person_config(event.person.id)
-        message = f"{event.name} left {event.old_zone_full} near {person_config.location.state}"
+        geocoded_location = get_person_config(event.person.id).location
+        location_string = f"{geocoded_location.thoroughfare} in {geocoded_location.locality}"
+        message = f"{event.name} left {event.old_zone_full} near {location_string}"
 
-    set_last_zone_arrival(event)
+    set_last_zone_arrival(person=event.person, value=event.timestamp)
 
     Notif(
         message=message,
