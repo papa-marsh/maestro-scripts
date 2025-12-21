@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from maestro.domains import OFF, ON, BinarySensor, Cover
+from maestro.domains import OFF, ON, UNAVAILABLE, BinarySensor, Cover
 from maestro.integrations import EntityId, NotifActionEvent, StateChangeEvent
 from maestro.registry import binary_sensor, cover, person
 from maestro.triggers import notif_action_trigger, state_change_trigger
@@ -36,6 +36,9 @@ def get_job_id(entity_id: EntityId, time: timedelta) -> str:
 @state_change_trigger(*EXTERIOR_DOORS, to_state=ON)
 @state_change_trigger(*GARAGE_STALLS, to_state="open")
 def schedule_notifications(state_change: StateChangeEvent) -> None:
+    if state_change.old.state == UNAVAILABLE:
+        return
+
     scheduler = JobScheduler()
     now = local_now()
     door = state_change.entity_id.resolve_entity()
