@@ -1,4 +1,4 @@
-from maestro.domains import HOME, OFF, ON
+from maestro.domains import HOME, ON
 from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import cron_trigger, state_change_trigger
@@ -28,7 +28,7 @@ def charge_reminder() -> None:
         name = vehicle.__name__
 
         is_home = vehicle.location.state == HOME
-        unplugged = vehicle.charger == OFF
+        unplugged = not vehicle.charger.is_on
         low_battery = float(vehicle.battery.state) < float(vehicle.charge_limit.state) - 20
 
         if is_home and unplugged and low_battery:
