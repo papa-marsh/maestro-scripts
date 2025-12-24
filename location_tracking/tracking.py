@@ -23,7 +23,10 @@ def save_zone_change(state_change: StateChangeEvent) -> None:
     )
 
     if previous_zone_change is not None:
-        update_previous_zone_duration(previous_zone_change, arrival_time)
+        update_zone_duration(
+            previous_zone_change=previous_zone_change,
+            departure_time=arrival_time,
+        )
 
     new_zone_change = ZoneChange(
         person=entity_id,
@@ -36,7 +39,7 @@ def save_zone_change(state_change: StateChangeEvent) -> None:
     db.session.commit()
 
 
-def update_previous_zone_duration(previous_zone_change: ZoneChange, arrival_time: datetime) -> None:
+def update_zone_duration(previous_zone_change: ZoneChange, departure_time: datetime) -> None:
     """Update the duration of the previous zone change based on the new arrival time."""
     prev_arrival = previous_zone_change.arrived_at
 
@@ -46,5 +49,5 @@ def update_previous_zone_duration(previous_zone_change: ZoneChange, arrival_time
     if prev_arrival.tzinfo is None:
         prev_arrival = prev_arrival.replace(tzinfo=UTC).astimezone(TIMEZONE)
 
-    duration = (arrival_time - prev_arrival).total_seconds()
+    duration = (departure_time - prev_arrival).total_seconds()
     previous_zone_change.duration_seconds = int(duration)
