@@ -2,7 +2,7 @@ from maestro.domains import MediaPlayer
 from maestro.integrations import Domain
 from maestro.registry import media_player
 from maestro.testing import MaestroTest
-from scripts.custom_domains.media_player import SonosSpeaker
+from scripts.custom_domains.sonos_speaker import SonosSpeaker
 
 from .. import media
 

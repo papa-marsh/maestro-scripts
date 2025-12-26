@@ -1,7 +1,7 @@
 from maestro.integrations import StateChangeEvent
 from maestro.registry import media_player
 from maestro.triggers import cron_trigger, state_change_trigger
-from scripts.custom_domains.media_player import SonosSpeaker
+from scripts.custom_domains.sonos_speaker import SonosSpeaker
 
 MAIN_SPEAKERS: list[SonosSpeaker] = [
     media_player.living_room,

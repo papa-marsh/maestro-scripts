@@ -1,6 +1,7 @@
 from .climate import BathroomFloor, TeslaHVAC, Thermostat
-from .input_text import GaugeTextComplication
-from .media_player import SonosSpeaker
+from .complication import GaugeTextComplication
+from .sonos_speaker import SonosSpeaker
+from .sprinkler_zone import SprinklerZone
 from .zone import ZoneExtended
 
 __all__ = [
@@ -9,5 +10,6 @@ __all__ = [
     GaugeTextComplication.__name__,
     Thermostat.__name__,
     SonosSpeaker.__name__,
+    SprinklerZone.__name__,
     ZoneExtended.__name__,
 ]
