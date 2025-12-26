@@ -39,48 +39,29 @@ def notif_message(duration: str, total_duration: str, wakeup: bool) -> str:
 
 
 @event_fired_trigger("olivia_asleep")
-def olivia_asleep() -> None:
-    now = local_now()
-    last_event = get_last_event()
-    if not last_event.wakeup:
-        sleep_tracker_notify("Olivia is already asleep")
-        return
-
-    if now - last_event.timestamp < FALSE_ALARM_THRESHOLD:
-        delete_last_event()
-        last_event = get_last_event()
-        duration = format_duration(now - last_event.timestamp)
-        sleep_tracker_notify(f"False alarm. Olivia has been asleep for {duration}")
-        return
-
-    duration = format_duration(now - last_event.timestamp)
-    save_sleep_event(timestamp=now, wakeup=False)
-    total_duration = format_duration(get_awake_time())
-
-    message = notif_message(duration, total_duration, wakeup=False)
-    sleep_tracker_notify(message)
-
-
 @event_fired_trigger("olivia_awake")
-def olivia_awake() -> None:
+def olivia_sleep_event(event: FiredEvent) -> None:
+    wakeup = event.type == "olivia_awake"
+    olivia_state = event.type.split("_")[1]
     now = local_now()
     last_event = get_last_event()
-    if last_event.wakeup:
-        sleep_tracker_notify("Olivia is already awake")
+
+    if last_event.wakeup == wakeup:
+        sleep_tracker_notify(f"Olivia is already {olivia_state}", target=person.emily)
         return
 
     if now - last_event.timestamp < FALSE_ALARM_THRESHOLD:
         delete_last_event()
         last_event = get_last_event()
         duration = format_duration(now - last_event.timestamp)
-        sleep_tracker_notify(f"False alarm. Olivia has been awake for {duration}")
+        sleep_tracker_notify(f"False alarm. Olivia has been {olivia_state} for {duration}")
         return
 
     duration = format_duration(now - last_event.timestamp)
-    save_sleep_event(timestamp=now, wakeup=True)
+    save_sleep_event(timestamp=now, wakeup=wakeup)
     total_duration = format_duration(get_awake_time())
 
-    message = notif_message(duration, total_duration, wakeup=True)
+    message = notif_message(duration, total_duration, wakeup=wakeup)
     sleep_tracker_notify(message)
 
 

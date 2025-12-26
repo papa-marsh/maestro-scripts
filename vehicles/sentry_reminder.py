@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from maestro.domains import ON
+from maestro.domains import OFF
 from maestro.registry import person, zone
 from maestro.triggers import state_change_trigger
 from maestro.utils import JobScheduler, Notif, local_now
@@ -27,7 +27,7 @@ def cancel_reminder() -> None:
 
 
 def send_reminder() -> None:
-    if Tess.sentry_mode.state == ON:
+    if Tess.sentry_mode.state == OFF:
         return
 
     Notif(

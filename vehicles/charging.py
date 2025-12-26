@@ -33,7 +33,7 @@ def charge_reminder() -> None:
 
         if is_home and unplugged and low_battery:
             Notif(
-                title="",
+                title=f"{name} Battery",
                 message=f"{name} is unplugged with only {vehicle.battery.state}% battery",
                 tag=f"{name.lower()}_charge_reminder",
                 priority=Notif.Priority.TIME_SENSITIVE,
