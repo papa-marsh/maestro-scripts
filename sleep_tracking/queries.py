@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 from maestro.app import db
-from maestro.config import TIMEZONE
 from maestro.utils.dates import local_now
 
 from .models import SleepEvent
@@ -18,14 +17,11 @@ def get_last_event() -> SleepEvent:
     latest_event = db.session.query(SleepEvent).order_by(SleepEvent.timestamp.desc()).first()
 
     if latest_event is None:
-        this_morning_at_midnight = local_now().replace(hour=0, minute=0, second=0, microsecond=0)
-        latest_event = SleepEvent(timestamp=this_morning_at_midnight, wakeup=False)
+        midnight_today = local_now().replace(hour=0, minute=0, second=0, microsecond=0)
+        latest_event = SleepEvent(timestamp=midnight_today, wakeup=False)
 
     if not isinstance(latest_event, SleepEvent) or not isinstance(latest_event.timestamp, datetime):
         raise TypeError
-
-    if latest_event.timestamp.tzinfo is None:
-        latest_event.timestamp = latest_event.timestamp.replace(tzinfo=TIMEZONE)
 
     return latest_event
 
@@ -66,19 +62,13 @@ def get_wake_windows(
         if not isinstance(event.wakeup, bool) or not isinstance(event.timestamp, datetime):
             raise TypeError
 
-        timestamp = (
-            event.timestamp
-            if event.timestamp.tzinfo
-            else event.timestamp.replace(tzinfo=TIMEZONE)
-        )
-
         if event.wakeup:
-            current_window_start = timestamp
+            current_window_start = event.timestamp
         else:
             if not current_window_start:
-                wake_windows.append((None, timestamp))
+                wake_windows.append((None, event.timestamp))
             else:
-                wake_windows.append((current_window_start, timestamp))
+                wake_windows.append((current_window_start, event.timestamp))
             current_window_start = None
 
     if current_window_start:

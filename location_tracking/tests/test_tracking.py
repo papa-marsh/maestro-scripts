@@ -38,7 +38,7 @@ def test_save_zone_change(mt: MaestroTest) -> None:
 
 def test_update_zone_duration() -> None:
     # Duration is set correctly on previous zone change
-    now = local_now().replace(tzinfo=UTC)
+    now = local_now()
     one_hour_ago = now - timedelta(hours=1)
 
     previous_zone_change = ZoneChange(
