@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from maestro.config import TIMEZONE
 from maestro.domains import Calendar
 from maestro.integrations import EntityId
 
@@ -48,16 +49,24 @@ class GoogleCalendar(Calendar):
                 if not isinstance(event_data, dict):
                     raise TypeError(f"Expected dict but got {type(event_data).__name__}")
 
-                start = event_data.get("start", "")
-                end = event_data.get("end", "")
-                all_day = "T" not in start and "T" not in end
+                start_string = event_data.get("start", "")
+                end_string = event_data.get("end", "")
+                all_day = "T" not in start_string and "T" not in end_string
+
+                start = datetime.fromisoformat(start_string)
+                end = datetime.fromisoformat(end_string)
+
+                if start.tzinfo is None:
+                    start = start.replace(tzinfo=TIMEZONE)
+                if end.tzinfo is None:
+                    end = end.replace(tzinfo=TIMEZONE)
 
                 events.append(
                     self.Event(
                         title=event_data.get("summary", ""),
                         description=event_data.get("description"),  # TODO: verify key
-                        start=datetime.fromisoformat(start),
-                        end=datetime.fromisoformat(end),
+                        start=start,
+                        end=end,
                         calendar=EntityId(calendar),
                         location=event_data.get("location"),
                         all_day=all_day,
