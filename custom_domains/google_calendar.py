@@ -38,8 +38,8 @@ class GoogleCalendar(Calendar):
     def get_gcal_events(self, days_to_fetch: int = 7) -> list[Event]:
         events = []
         raw_response = self.get_events(duration={"days": days_to_fetch})
-        for calendar, event_data_list in raw_response.items():
-            for event_data in event_data_list:
+        for calendar, content in raw_response.items():
+            for event_data in content["events"]:
                 if not isinstance(event_data, dict):
                     raise TypeError(f"Expected dict but got {type(event_data).__name__}")
 
