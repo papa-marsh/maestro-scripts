@@ -46,7 +46,7 @@ class GoogleCalendar(Calendar):
                 start = event_data.get("start", "")
                 end = event_data.get("end", "")
 
-                all_day = "T" in start and "T" in end
+                all_day = "T" not in start and "T" not in end
 
                 events.append(
                     self.Event(
