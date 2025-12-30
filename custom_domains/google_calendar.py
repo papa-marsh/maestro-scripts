@@ -35,9 +35,14 @@ class GoogleCalendar(Calendar):
             all_day=self.all_day,
         )
 
-    def get_gcal_events(self, days_to_fetch: int = 7) -> list[Event]:
+    def get_gcal_events(
+        self,
+        days_to_fetch: int = 7,
+        calendars: list[EntityId] | None = None,
+    ) -> list[Event]:
         events = []
-        raw_response = self.get_events(duration={"days": days_to_fetch})
+        raw_response = self.get_events(duration={"days": days_to_fetch}, calendars=calendars)
+
         for calendar, content in raw_response.items():
             for event_data in content["events"]:
                 if not isinstance(event_data, dict):
@@ -45,7 +50,6 @@ class GoogleCalendar(Calendar):
 
                 start = event_data.get("start", "")
                 end = event_data.get("end", "")
-
                 all_day = "T" not in start and "T" not in end
 
                 events.append(
