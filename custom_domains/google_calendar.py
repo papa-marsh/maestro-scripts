@@ -37,11 +37,11 @@ class GoogleCalendar(Calendar):
 
     def get_gcal_events(
         self,
-        days_to_fetch: int = 7,
-        calendars: list[EntityId] | None = None,
+        days: int = 7,
+        calendar_ids: list[EntityId] | None = None,
     ) -> list[Event]:
         events = []
-        raw_response = self.get_events(duration={"days": days_to_fetch}, calendars=calendars)
+        raw_response = self.get_events(duration={"days": days}, calendar_ids=calendar_ids)
 
         for calendar, content in raw_response.items():
             for event_data in content["events"]:
@@ -63,4 +63,6 @@ class GoogleCalendar(Calendar):
                         all_day=all_day,
                     )
                 )
+        events.sort(key=lambda e: e.start)
+
         return events
