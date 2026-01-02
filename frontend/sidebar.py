@@ -41,7 +41,7 @@ def initialize_sidebar_text_entity() -> None:
 @cron_trigger(minute=10)
 @state_change_trigger(*calendar_ids)
 def set_sidebar_text() -> None:
-    maestro.cast_sidebar_text = build_sidebar_text()
+    maestro.cast_sidebar_text.state = build_sidebar_text()
 
 
 def build_sidebar_text() -> str:
