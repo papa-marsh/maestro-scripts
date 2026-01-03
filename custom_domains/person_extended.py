@@ -1,11 +1,19 @@
+from typing import TYPE_CHECKING
+
+from maestro.domains import Person
 from maestro.integrations import EntityId
-from maestro.registry import binary_sensor, person, sensor
-from scripts.vehicles.common import Nyx, Tess
+from maestro.registry import binary_sensor, sensor
+
+if TYPE_CHECKING:
+    from scripts.vehicles.common import Nyx, Tess
 
 
-class Marshall:
-    person = person.marshall
-    vehicle = Nyx
+class Marshall(Person):
+    @property
+    def vehicle(self) -> "type[Nyx]":
+        from scripts.vehicles.common import Nyx
+
+        return Nyx
 
     location = sensor.marshall_s_iphone_geocoded_location
 
@@ -20,9 +28,12 @@ class Marshall:
     watch_battery_state = sensor.marshalls_iphone_watch_battery_state
 
 
-class Emily:
-    person = person.emily
-    vehicle = Tess
+class Emily(Person):
+    @property
+    def vehicle(self) -> "type[Tess]":
+        from scripts.vehicles.common import Tess
+
+        return Tess
 
     location = sensor.emily_s_iphone_geocoded_location
 

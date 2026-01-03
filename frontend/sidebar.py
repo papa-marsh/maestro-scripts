@@ -39,7 +39,7 @@ def initialize_sidebar_text_entity() -> None:
 
 
 @cron_trigger(minute=10)
-@state_change_trigger(*calendar_ids)
+@state_change_trigger(*calendar_ids, sun.sun)
 def set_sidebar_text() -> None:
     maestro.cast_sidebar_text.state = build_sidebar_text()
 
@@ -49,10 +49,10 @@ def build_sidebar_text() -> str:
 
     if sun.sun.is_above_horizon:
         sun_action = "sets"
-        sun_time = sun.sun.next_setting
+        sun_time = sun.sun.next_setting.strftime("%-I:%M %p")
     else:
         sun_action = "rises"
-        sun_time = sun.sun.next_rising
+        sun_time = sun.sun.next_rising.strftime("%-I:%M %p")
 
     upcoming_events = calendar.family.get_gcal_events(days=7, calendar_ids=calendar_ids)
     for calendar_event in upcoming_events:

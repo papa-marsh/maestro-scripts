@@ -6,8 +6,7 @@ from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import state_change_trigger
 from maestro.utils import JobScheduler, Notif, format_duration, local_now
-from scripts.custom_domains import ZoneExtended
-from scripts.family.people import get_person_config
+from scripts.custom_domains import Emily, Marshall, ZoneExtended
 from scripts.location_tracking.queries import (
     get_last_left_home,
     get_last_zone_arrival,
@@ -22,8 +21,8 @@ JOB_ID_PREFIX = f"{NOTIF_IDENTIFIER}_job_"
 @dataclass
 class ZoneChangeEvent:
     name: str
-    person: Person
-    spouse: Person
+    person: Marshall | Emily
+    spouse: Marshall | Emily
     timestamp: datetime
     old_zone: str
     old_zone_is_region: bool
@@ -37,7 +36,7 @@ class ZoneChangeEvent:
 def build_zone_change_event(state_change: StateChangeEvent) -> ZoneChangeEvent:
     person_ = state_change.entity_id.resolve_entity()
     spouse = person.emily if person_ == person.marshall else person.marshall
-    if not isinstance(person_, Person):
+    if not isinstance(person_, Marshall | Emily):
         raise TypeError
 
     old_metadata = ZoneExtended.get_zone_metadata(state_change.old.state)
@@ -113,9 +112,9 @@ def send_location_update(event: ZoneChangeEvent) -> None:
         message = f"{event.name} is in {event.new_zone_full}"
 
     else:
-        geocoded_location = get_person_config(event.person.id).location
-        location_string = f"{geocoded_location.thoroughfare} in {geocoded_location.locality}"
-        message = f"{event.name} left {event.old_zone_full} near {location_string}"
+        street = event.person.location.thoroughfare
+        city = event.person.location.locality
+        message = f"{event.name} left {event.old_zone_full} near {street} in {city}"
 
     set_last_zone_arrival(person=event.person, value=event.timestamp)
 

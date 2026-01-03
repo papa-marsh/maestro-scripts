@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from maestro.domains import ON
+from maestro.domains import ON, Person
 from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import state_change_trigger
@@ -24,7 +24,7 @@ def send_critical_door_open_notif(state_change: StateChangeEvent) -> None:
         friendly_name = door.friendly_name.replace(" Sensor", "")
         time = now.strftime("%-I:%M %p")
 
-        target = [person.marshall, person.emily] if nobody_home else [person.marshall]
+        target: list[Person] = [person.marshall, person.emily] if nobody_home else [person.marshall]
 
         Notif(
             title="⚠️ Door Opened ⚠️",
