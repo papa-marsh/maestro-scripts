@@ -38,7 +38,7 @@ def initialize_sidebar_text_entity() -> None:
         log.info("Entity `maestro.cast_sidebar_text` already exists. Skipping initialization")
 
 
-@cron_trigger(minute=10)
+@cron_trigger("*/10 * * * *")
 @state_change_trigger(*calendar_ids, sun.sun)
 def set_sidebar_text() -> None:
     maestro.cast_sidebar_text.state = build_sidebar_text()
