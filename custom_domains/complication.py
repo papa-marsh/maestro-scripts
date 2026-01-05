@@ -1,5 +1,4 @@
-from maestro.domains import InputText
-from maestro.domains.entity import EntityAttribute
+from maestro.domains import EntityAttribute, InputText
 from maestro.utils import local_now
 
 

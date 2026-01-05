@@ -26,9 +26,10 @@ def thermostat_hold_reminder() -> None:
 
 
 @cron_trigger(hour=8)
+@cron_trigger(hour=20)
 def check_thermostat_hold() -> None:
     if climate.thermostat.preset_mode == Thermostat.PresetMode.HOLD:
         Notif(
-            title="Thermostat on Hold",
-            message="The thermostat is still set to hold mode",
+            title="Thermostat Set To Hold",
+            message=f"The thermostat is still set to hold at {climate.thermostat.temperature}",
         ).send(person.marshall)

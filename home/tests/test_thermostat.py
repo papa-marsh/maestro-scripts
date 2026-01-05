@@ -66,7 +66,7 @@ def test_check_thermostat_hold(mt: MaestroTest) -> None:
     mt.set_state(
         entity=climate.thermostat,
         state=Thermostat.HVACMode.HEAT,
-        attributes={"preset_mode": Thermostat.PresetMode.HOLD},
+        attributes={"preset_mode": Thermostat.PresetMode.HOLD, "temperature": 70},
     )
     thermostat.check_thermostat_hold()
     mt.assert_action_called(Domain.NOTIFY, person.marshall.notify_action_name)
