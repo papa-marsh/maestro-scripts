@@ -22,6 +22,7 @@ class Nyx:
     charger = binary_sensor.nyx_charger
     doors = binary_sensor.nyx_doors
     online = binary_sensor.nyx_online
+    parked = binary_sensor.nyx_parking_brake
     windows = binary_sensor.nyx_windows
 
     flash_lights = button.nyx_flash_lights
@@ -89,6 +90,7 @@ class Tess:
     charger = binary_sensor.tess_charger
     doors = binary_sensor.tess_doors
     online = binary_sensor.tess_online
+    parked = binary_sensor.tess_parking_brake
     windows = binary_sensor.tess_windows
 
     flash_lights = button.tess_flash_lights
