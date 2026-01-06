@@ -35,6 +35,7 @@ def initialize_card() -> None:
         attributes=asdict(attributes),
         restore_cached=True,
     )
+    card.title = attributes.title
 
 
 @state_change_trigger(Nyx.climate, Nyx.parked, Nyx.software_update)
