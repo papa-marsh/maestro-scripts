@@ -2,7 +2,6 @@ from dataclasses import asdict
 from datetime import timedelta
 
 from maestro.domains import HOME, UNAVAILABLE, UNKNOWN
-from maestro.integrations import StateChangeEvent
 from maestro.registry import maestro
 from maestro.triggers import (
     HassEvent,
@@ -58,8 +57,8 @@ def set_state() -> None:
 
 
 @state_change_trigger(Tess.battery)
-def set_row_1(state_change: StateChangeEvent) -> None:
-    battery = state_change.new.state
+def set_row_1() -> None:
+    battery = Tess.battery.state
     if battery in [UNKNOWN, UNAVAILABLE]:
         card.row_1_icon = Icon.BATTERY_UNKNOWN
         return

@@ -5,8 +5,12 @@ class Icon(StrEnum):
     BATTERY_UNKNOWN = "mdi:battery-unknown"
     CAR_ELECTRIC = "mdi:car-electric"
     CAR_ELECTRIC_OUTLINE = "mdi:car-electric-outline"
+    DOG = "mdi:dog"
+    DOOR_OPEN = "mdi:door-open"
     FAN = "mdi:fan"
+    FIRE = "mdi:fire"
     HOME = "mdi:home"
+    HVAC = "mdi:hvac"
     LOCK = "mdi:lock"
     LOCK_OPEN_VARIANT = "mdi:lock-open-variant"
     LOCK_QUESTION = "mdi:lock-question"
@@ -14,8 +18,10 @@ class Icon(StrEnum):
     NAVIGATION = "mdi:navigation"
     PROGRESS_QUESTION = "mdi:progress-question"
     ROAD_VARIANT = "mdi:road-variant"
+    SNOWFLAKE = "mdi:snowflake"
     THERMOMETER = "mdi:thermometer"
     THERMOMETER_OFF = "mdi:thermometer-off"
+    THERMOMETER_WATER = "mdi:thermometer-water"
     UPDATE = "mdi:update"
 
 
