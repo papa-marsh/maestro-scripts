@@ -5,6 +5,7 @@ from maestro.integrations import FiredEvent, StateChangeEvent
 from maestro.registry import climate, person
 from maestro.triggers import event_fired_trigger, state_change_trigger
 from maestro.utils import JobScheduler, Notif, format_duration, local_now
+from scripts.common.event_type import EventType
 from scripts.config.secrets import USER_ID_TO_PERSON
 from scripts.custom_domains import BathroomFloor
 
@@ -17,7 +18,7 @@ TURN_OFF_HEAT_JOB_ID = "bathroom_floor_turn_off_heat"
 AUTO_SHUTOFF_JOB_ID = "bathroom_floor_auto_shutoff"
 
 
-@event_fired_trigger("bathroom_floor")
+@event_fired_trigger(EventType.BATHROOM_FLOOR)
 def heat_bathroom_floor(event: FiredEvent) -> None:
     now = local_now()
     caller = USER_ID_TO_PERSON[str(event.user_id)]

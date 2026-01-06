@@ -3,6 +3,7 @@ from maestro.integrations import Domain
 from maestro.registry import maestro, person
 from maestro.testing import MaestroTest
 from maestro.triggers import HassEvent
+from scripts.common.event_type import EventType
 
 from .. import meetings
 
@@ -22,12 +23,12 @@ def test_initialize_meeting_active_entity(mt: MaestroTest) -> None:
 def test_toggle_meeting_active(mt: MaestroTest) -> None:
     # Action toggles entity off
     mt.set_state(maestro.meeting_active, ON)
-    mt.trigger_event("meeting_active")
+    mt.trigger_event(EventType.MEETING_ACTIVE)
     mt.assert_state(maestro.meeting_active, OFF)
 
     # Notif doesn't send when Emily's away
     mt.set_state(person.emily, AWAY)
-    mt.trigger_event("meeting_active")
+    mt.trigger_event(EventType.MEETING_ACTIVE)
     mt.assert_action_not_called(Domain.NOTIFY, person.emily.notify_action_name)
 
     # Notif sends when Emily arrives home if meeting is active
@@ -38,5 +39,5 @@ def test_toggle_meeting_active(mt: MaestroTest) -> None:
     mt.clear_action_calls()
     mt.set_state(maestro.meeting_active, OFF)
     mt.assert_action_not_called(Domain.NOTIFY, person.emily.notify_action_name)
-    mt.trigger_event("meeting_active")
+    mt.trigger_event(EventType.MEETING_ACTIVE)
     mt.assert_action_called(Domain.NOTIFY, person.emily.notify_action_name)

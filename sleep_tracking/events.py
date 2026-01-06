@@ -5,6 +5,7 @@ from maestro.integrations import FiredEvent
 from maestro.registry import person
 from maestro.triggers import event_fired_trigger
 from maestro.utils import Notif, format_duration, local_now
+from scripts.common.event_type import EventType
 from scripts.config.secrets import USER_ID_TO_PERSON
 
 from .queries import (
@@ -38,8 +39,8 @@ def notif_message(duration: str, total_duration: str, wakeup: bool) -> str:
     return f"Olivia {event_text} after {duration}\nWake time today: {total_duration}"
 
 
-@event_fired_trigger("olivia_asleep")
-@event_fired_trigger("olivia_awake")
+@event_fired_trigger(EventType.OLIVIA_ASLEEP)
+@event_fired_trigger(EventType.OLIVIA_AWAKE)
 def olivia_sleep_event(event: FiredEvent) -> None:
     wakeup = event.type == "olivia_awake"
     olivia_state = event.type.split("_")[1]
@@ -65,7 +66,7 @@ def olivia_sleep_event(event: FiredEvent) -> None:
     sleep_tracker_notify(message)
 
 
-@event_fired_trigger("olivia_info")
+@event_fired_trigger(EventType.OLIVIA_INFO)
 def olivia_info(event: FiredEvent) -> None:
     now = local_now()
     last_event = get_last_event()

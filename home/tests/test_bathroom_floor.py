@@ -1,6 +1,7 @@
 from maestro.integrations import Domain
 from maestro.registry import climate, person
 from maestro.testing import MaestroTest
+from scripts.common.event_type import EventType
 from scripts.config.secrets import PERSON_TO_USER_ID
 from scripts.custom_domains import BathroomFloor
 
@@ -9,7 +10,7 @@ from .. import bathroom_floor
 
 def test_heat_bathroom_floor(mt: MaestroTest) -> None:
     # Firing event turns on heat and schedules jobs
-    mt.trigger_event("bathroom_floor", user_id=PERSON_TO_USER_ID[person.marshall])
+    mt.trigger_event(EventType.BATHROOM_FLOOR, user_id=PERSON_TO_USER_ID[person.marshall])
     mt.assert_action_called(
         domain=Domain.CLIMATE,
         action="set_temperature",
@@ -73,7 +74,7 @@ def test_bathroom_floor_timeout_handler(mt: MaestroTest) -> None:
     mt.assert_job_scheduled(bathroom_floor.AUTO_SHUTOFF_JOB_ID, bathroom_floor.reset_after_timeout)
 
     # Floor going to auto mode cancels jobs
-    mt.trigger_event("bathroom_floor", user_id=PERSON_TO_USER_ID[person.marshall])
+    mt.trigger_event(EventType.BATHROOM_FLOOR, user_id=PERSON_TO_USER_ID[person.marshall])
     mt.trigger_state_change(climate.bathroom_floor_thermostat, new=BathroomFloor.HVACMode.AUTO)
     mt.assert_job_not_scheduled(bathroom_floor.TEMPERATURE_CHECK_JOB_ID)
     mt.assert_job_not_scheduled(bathroom_floor.TURN_OFF_HEAT_JOB_ID)

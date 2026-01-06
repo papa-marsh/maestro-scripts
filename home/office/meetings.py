@@ -6,6 +6,7 @@ from maestro.registry import maestro, person, switch
 from maestro.triggers import HassEvent, event_fired_trigger, hass_trigger, state_change_trigger
 from maestro.utils import Notif
 from maestro.utils.exceptions import EntityAlreadyExistsError
+from scripts.common.event_type import EventType
 
 
 @hass_trigger(HassEvent.STARTUP)
@@ -20,7 +21,7 @@ def initialize_meeting_active_entity() -> None:
         )
 
 
-@event_fired_trigger("meeting_active")
+@event_fired_trigger(EventType.MEETING_ACTIVE)
 def toggle_meeting_active() -> None:
     if maestro.meeting_active.state == OFF:
         maestro.meeting_active.state = ON
