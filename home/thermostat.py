@@ -2,7 +2,7 @@ from maestro.registry import climate, person
 from maestro.triggers import cron_trigger
 from maestro.utils import Notif
 from scripts.custom_domains.climate import Thermostat
-from scripts.custom_domains.zone import ZoneExtended
+from scripts.custom_domains.zone_extended import ZoneExtended
 
 
 @cron_trigger(hour=12)
