@@ -7,11 +7,13 @@ from maestro.triggers import (
     HassEvent,
     MaestroEvent,
     cron_trigger,
+    event_fired_trigger,
     hass_trigger,
     maestro_trigger,
     state_change_trigger,
 )
 from maestro.utils import local_now
+from scripts.common.event_type import EventType
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
 from scripts.frontend.common.icons import Icon
 from scripts.home.door_left_open import EXTERIOR_DOORS
@@ -92,9 +94,23 @@ def set_row_3() -> None:
     card.row_3_color = RowColor.DEFAULT
 
 
+@cron_trigger("0 18 * * 1")
+def garbage_bin_reminder() -> None:
+    card.blink = True
+
+
 @cron_trigger(hour=7)
 @cron_trigger(hour=19)
-def set_row_3_color() -> None:
+def feed_chelsea_reminder() -> None:
     last_changed = binary_sensor.chelsea_cabinet_sensor.last_changed
     if local_now() - last_changed > timedelta(hours=1):
         card.row_3_color = RowColor.RED
+
+
+@event_fired_trigger(EventType.ENTITY_CARD_3_TAP)
+def handle_tap() -> None:
+    if card.blink:
+        card.blink = False
+        return
+
+    card.row_3_color = RowColor.DEFAULT if card.row_3_color == RowColor.RED else RowColor.RED

@@ -11,7 +11,7 @@ from maestro.triggers import (
     state_change_trigger,
 )
 from maestro.utils import JobScheduler, local_now, resolve_timestamp
-from scripts.custom_domains.zone import ZoneExtended
+from scripts.custom_domains.zone_extended import ZoneExtended
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
 from scripts.frontend.common.icons import Icon, battery_icon
 from scripts.vehicles.common import Tess
