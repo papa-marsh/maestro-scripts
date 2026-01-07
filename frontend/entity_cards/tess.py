@@ -16,7 +16,7 @@ from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
 from scripts.frontend.common.icons import Icon, battery_icon
 from scripts.vehicles.common import Tess
 
-card = maestro.entity_card_5
+card = maestro.entity_card_1
 
 ARRIVAL_TIME_RECHECK_JOB_ID = "tess_arrival_time_recheck"
 
