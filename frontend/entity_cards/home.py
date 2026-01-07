@@ -58,7 +58,7 @@ def set_state() -> None:
 @state_change_trigger(climate.thermostat)
 @cron_trigger("*/10 * * * *")
 def set_row_1() -> None:
-    if climate.thermostat in [UNKNOWN, UNAVAILABLE]:
+    if climate.thermostat.state in [UNKNOWN, UNAVAILABLE]:
         card.row_1_value = "Offline"
         card.row_1_icon = Icon.THERMOMETER_OFF
         return
@@ -71,7 +71,7 @@ def set_row_1() -> None:
 @state_change_trigger(climate.thermostat)
 @cron_trigger("*/10 * * * *")
 def set_row_2() -> None:
-    if climate.thermostat in [UNKNOWN, UNAVAILABLE]:
+    if climate.thermostat.state in [UNKNOWN, UNAVAILABLE]:
         card.row_2_value = "Offline"
         card.row_2_icon = Icon.HVAC
         return
