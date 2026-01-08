@@ -16,7 +16,7 @@ class GaugeTextComplication(InputText):
         gauge: float | None = None,
     ) -> None:
         now = local_now()
-        self.state_manager.upsert_hass_entity(
+        self.state_manager.set_hass_entity(
             entity_id=self.id,
             state=now.isoformat(),
             attributes={

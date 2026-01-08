@@ -13,7 +13,7 @@ from scripts.common.event_type import EventType
 def initialize_meeting_active_entity() -> None:
     """Create the entity only if it doesn't already exist"""
     with suppress(EntityAlreadyExistsError):
-        StateManager().upsert_hass_entity(
+        StateManager().set_hass_entity(
             entity_id=EntityId("maestro.meeting_active"),
             state=OFF,
             attributes={},
