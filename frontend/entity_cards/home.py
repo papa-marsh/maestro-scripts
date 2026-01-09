@@ -1,3 +1,4 @@
+from calendar import Day
 from dataclasses import asdict
 from datetime import timedelta
 
@@ -66,6 +67,7 @@ def set_row_1() -> None:
     temp = climate.thermostat.current_temperature
     humidity = climate.thermostat.current_humidity
     card.row_1_value = f"{temp:.0f}° · {humidity:.0f}%"
+    card.row_1_icon = Icon.THERMOMETER
 
 
 @state_change_trigger(climate.thermostat)
@@ -94,7 +96,7 @@ def set_row_3() -> None:
     card.row_3_color = RowColor.DEFAULT
 
 
-@cron_trigger("0 18 * * 1")
+@cron_trigger(hour=18, day_of_week=Day.MONDAY)
 def garbage_bin_reminder() -> None:
     card.blink = True
 
