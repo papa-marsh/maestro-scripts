@@ -6,6 +6,7 @@ class Icon(StrEnum):
     CAR_ELECTRIC = "mdi:car-electric"
     CAR_ELECTRIC_OUTLINE = "mdi:car-electric-outline"
     CLOUD = "mdi:cloud"
+    CLOUD_OUTLINE = "mdi:cloud-outline"
     DOG = "mdi:dog"
     DOOR_OPEN = "mdi:door-open"
     FAN = "mdi:fan"

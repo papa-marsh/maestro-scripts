@@ -34,7 +34,7 @@ def initialize_card() -> None:
     )
     card.title = attributes.title
     card.row_2_icon = Icon.FINANCE
-    card.row_3_icon = Icon.CLOUD
+    card.row_3_icon = Icon.CLOUD_OUTLINE
 
 
 @state_change_trigger(maestro.meeting_active)

@@ -106,7 +106,7 @@ def set_row_3() -> None:
     seconds_remaining = (resolve_timestamp(Tess.arrival_time.state) - now).total_seconds()
 
     if not Tess.parked.is_on and seconds_remaining >= 0:
-        card.row_3_value = f"{seconds_remaining // 60} minutes"
+        card.row_3_value = f"{int(seconds_remaining // 60)} minutes"
         card.row_3_icon = Icon.MAP_CLOCK
 
         JobScheduler().schedule_job(
