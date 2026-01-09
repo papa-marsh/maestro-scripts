@@ -8,13 +8,12 @@ from maestro.triggers import (
     HassEvent,
     MaestroEvent,
     cron_trigger,
-    event_fired_trigger,
     hass_trigger,
     maestro_trigger,
     state_change_trigger,
 )
 from maestro.utils import local_now
-from scripts.common.event_type import EventType
+from scripts.common.event_type import UIEvent, ui_event_trigger
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
 from scripts.frontend.common.icons import Icon
 from scripts.home.door_left_open import EXTERIOR_DOORS
@@ -109,7 +108,7 @@ def feed_chelsea_reminder() -> None:
         card.row_3_color = RowColor.RED
 
 
-@event_fired_trigger(EventType.ENTITY_CARD_3_TAP)
+@ui_event_trigger(UIEvent.ENTITY_CARD_3_TAP)
 def handle_tap() -> None:
     if card.blink:
         card.blink = False

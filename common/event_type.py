@@ -1,4 +1,7 @@
+from collections.abc import Callable
 from enum import StrEnum, auto
+
+from maestro.triggers import event_fired_trigger
 
 
 class EventType(StrEnum):
@@ -10,6 +13,10 @@ class EventType(StrEnum):
     OLIVIA_AWAKE = auto()
     OLIVIA_INFO = auto()
 
+    MAESTRO_UI_EVENT = "maestro_ui_event"
+
+
+class UIEvent(StrEnum):
     ENTITY_CARD_1_TAP = "entity_card_1_tap"
     ENTITY_CARD_1_DOUBLE_TAP = "entity_card_1_double_tap"
     ENTITY_CARD_1_HOLD = "entity_card_1_hold"
@@ -28,3 +35,8 @@ class EventType(StrEnum):
     ENTITY_CARD_6_TAP = "entity_card_6_tap"
     ENTITY_CARD_6_DOUBLE_TAP = "entity_card_6_double_tap"
     ENTITY_CARD_6_HOLD = "entity_card_6_hold"
+
+
+def ui_event_trigger(trigger: UIEvent) -> Callable:
+    """Shorthand for @event_fired_trigger with EventType.MAESTRO_UI_EVENT."""
+    return event_fired_trigger(EventType.MAESTRO_UI_EVENT, trigger=trigger)
