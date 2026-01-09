@@ -1,5 +1,4 @@
 from .climate import BathroomFloor, TeslaHVAC, Thermostat
-from .complication import GaugeTextComplication
 from .google_calendar import GoogleCalendar
 from .person_extended import Emily, Marshall
 from .sonos_speaker import SonosSpeaker
@@ -9,7 +8,6 @@ from .zone_extended import ZoneExtended
 __all__ = [
     BathroomFloor.__name__,
     TeslaHVAC.__name__,
-    GaugeTextComplication.__name__,
     GoogleCalendar.__name__,
     Emily.__name__,
     Marshall.__name__,

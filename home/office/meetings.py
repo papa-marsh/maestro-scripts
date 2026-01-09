@@ -1,24 +1,20 @@
-from contextlib import suppress
-
 from maestro.domains import HOME, OFF, ON
 from maestro.integrations import EntityId, StateChangeEvent, StateManager
 from maestro.registry import maestro, person, switch
 from maestro.triggers import HassEvent, event_fired_trigger, hass_trigger, state_change_trigger
 from maestro.utils import Notif
-from maestro.utils.exceptions import EntityAlreadyExistsError
 from scripts.common.event_type import EventType
 
 
 @hass_trigger(HassEvent.STARTUP)
 def initialize_meeting_active_entity() -> None:
     """Create the entity only if it doesn't already exist"""
-    with suppress(EntityAlreadyExistsError):
-        StateManager().set_hass_entity(
-            entity_id=EntityId("maestro.meeting_active"),
-            state=OFF,
-            attributes={},
-            create_only=True,
-        )
+    StateManager().initialize_hass_entity(
+        entity_id=EntityId("maestro.meeting_active"),
+        state=OFF,
+        attributes={},
+        restore_cached=True,
+    )
 
 
 @event_fired_trigger(EventType.MEETING_ACTIVE)
