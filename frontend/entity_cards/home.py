@@ -34,8 +34,7 @@ def initialize_card() -> None:
         attributes=asdict(attributes),
         restore_cached=True,
     )
-    card.title = attributes.title
-    card.row_3_icon = Icon.DOG
+    card.update(title=attributes.title, row_3_icon=Icon.DOG)
 
 
 @state_change_trigger(*EXTERIOR_DOORS)
@@ -43,38 +42,40 @@ def set_state() -> None:
     open_doors = [door for door in EXTERIOR_DOORS if door.state == "on"]
     open_count = len(open_doors)
     if open_count == 1:
-        card.state = open_doors[0].friendly_name.split(" ")[0]
-        card.active = True
+        state = open_doors[0].friendly_name.split(" ")[0]
+        icon = Icon.DOOR_OPEN
+        active = True
     elif open_count > 1:
-        card.state = f"{open_count} Doors"
-        card.icon = Icon.DOOR_OPEN
-        card.active = True
+        state = f"{open_count} Doors"
+        icon = Icon.DOOR_OPEN
+        active = True
     else:
-        card.state = "All Shut"
-        card.icon = Icon.HOME
-        card.active = False
+        state = "All Shut"
+        icon = Icon.HOME
+        active = False
+
+    card.update(state=state, icon=icon, active=active)
 
 
 @state_change_trigger(climate.thermostat)
 @cron_trigger("*/10 * * * *")
 def set_row_1() -> None:
     if climate.thermostat.state in [UNKNOWN, UNAVAILABLE]:
-        card.row_1_value = "Offline"
-        card.row_1_icon = Icon.THERMOMETER_OFF
+        card.update(row_1_value="Offline", row_1_icon=Icon.THERMOMETER_OFF)
         return
 
-    temp = climate.thermostat.current_temperature
+    temperature = climate.thermostat.current_temperature
     humidity = climate.thermostat.current_humidity
-    card.row_1_value = f"{temp:.0f}° · {humidity:.0f}%"
-    card.row_1_icon = Icon.THERMOMETER
+
+    value = f"{temperature:.0f}° · {humidity:.0f}%"
+    card.update(row_1_value=value, row_1_icon=Icon.THERMOMETER)
 
 
 @state_change_trigger(climate.thermostat)
 @cron_trigger("*/10 * * * *")
 def set_row_2() -> None:
     if climate.thermostat.state in [UNKNOWN, UNAVAILABLE]:
-        card.row_2_value = "Offline"
-        card.row_2_icon = Icon.HVAC
+        card.update(row_2_value="Offline", row_2_icon=Icon.HVAC)
         return
 
     value = climate.thermostat.hvac_action
@@ -83,16 +84,15 @@ def set_row_2() -> None:
     if current_temp != setpoint:
         value += f" ({setpoint})"
 
-    icon_map = {"cool": "mdi:snowflake", "heat": "mdi:fire", "off": "mdi:hvac-off"}
-
-    card.row_2_value = value
-    card.row_2_icon = icon_map[climate.thermostat.state]
+    icon_map = {"cool": Icon.SNOWFLAKE, "heat": Icon.FIRE, "off": Icon.HVAC_OFF}
+    icon = icon_map.get(climate.thermostat.state, Icon.HELP)
+    card.update(row_2_value=value, row_2_icon=icon)
 
 
 @state_change_trigger(binary_sensor.chelsea_cabinet_sensor, to_state=ON)
 def set_row_3() -> None:
-    card.row_3_value = local_now().strftime("%-I:%M %p")
-    card.row_3_color = RowColor.DEFAULT
+    value = local_now().strftime("%-I:%M %p")
+    card.update(row_3_value=value, row_3_color=RowColor.DEFAULT)
 
 
 @cron_trigger(hour=18, day_of_week=Day.MONDAY)

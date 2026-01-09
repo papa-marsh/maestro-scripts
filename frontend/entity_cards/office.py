@@ -32,21 +32,21 @@ def initialize_card() -> None:
         attributes=asdict(attributes),
         restore_cached=True,
     )
-    card.title = attributes.title
-    card.row_2_icon = Icon.FINANCE
-    card.row_3_icon = Icon.CLOUD_OUTLINE
+    card.update(title=attributes.title, row_2_icon=Icon.FINANCE, row_3_icon=Icon.CLOUD_OUTLINE)
 
 
 @state_change_trigger(maestro.meeting_active)
 def set_state(state_change: StateChangeEvent) -> None:
     if state_change.new.state == ON:
-        card.active = True
-        card.state = "Busy"
-        card.icon = Icon.HEADSET
+        active = True
+        state = "Busy"
+        icon = Icon.HEADSET
     else:
-        card.active = False
-        card.state = "Available"
-        card.icon = Icon.CLOUD
+        active = False
+        state = "Available"
+        icon = Icon.CLOUD
+
+    card.update(state=state, active=active, icon=icon)
 
 
 @state_change_trigger(
@@ -56,14 +56,15 @@ def set_state(state_change: StateChangeEvent) -> None:
 )
 def set_row_1() -> None:
     if sensor.office_ambient_sensor_temperature.state in [UNKNOWN, UNAVAILABLE]:
-        card.row_1_value = "Offline"
-        card.row_1_icon = Icon.THERMOMETER_OFF
+        card.update(row_1_value="Offline", row_1_icon=Icon.THERMOMETER_OFF)
         return
 
     temperature = float(sensor.office_ambient_sensor_temperature.state)
     humidity = float(sensor.office_ambient_sensor_humidity.state)
-    card.row_1_value = f"{temperature:.0f}° · {humidity:.0f}%"
-    card.row_1_icon = Icon.RADIATOR if switch.space_heater.is_on else Icon.THERMOMETER_WATER
+
+    value = f"{temperature:.0f}° · {humidity:.0f}%"
+    icon = Icon.RADIATOR if switch.space_heater.is_on else Icon.THERMOMETER_WATER
+    card.update(row_1_value=value, row_1_icon=icon)
 
 
 def set_row_2() -> None: ...
