@@ -2,7 +2,10 @@ from enum import StrEnum
 
 
 class Icon(StrEnum):
+    BABY = "mdi:baby"
+    BABY_BUGGY = "mdi:baby-buggy"
     BATTERY_UNKNOWN = "mdi:battery-unknown"
+    CALENDAR_TODAY = "mdi:calendar-today"
     CAR_ELECTRIC = "mdi:car-electric"
     CAR_ELECTRIC_OUTLINE = "mdi:car-electric-outline"
     CLOUD = "mdi:cloud"
@@ -25,7 +28,9 @@ class Icon(StrEnum):
     PROGRESS_QUESTION = "mdi:progress-question"
     RADIATOR = "mdi:radiator"
     ROAD_VARIANT = "mdi:road-variant"
+    SLEEP = "mdi:sleep"
     SNOWFLAKE = "mdi:snowflake"
+    TIMER_OUTLINE = "mdi:timer-outline"
     THERMOMETER = "mdi:thermometer"
     THERMOMETER_OFF = "mdi:thermometer-off"
     THERMOMETER_WATER = "mdi:thermometer-water"
