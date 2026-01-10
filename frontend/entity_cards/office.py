@@ -71,7 +71,7 @@ def set_row_2() -> None: ...
 def set_row_3() -> None: ...
 
 
-@cron_trigger(hour=8, minute=30)
+@cron_trigger(hour=8, minute=30, day_of_week=[0, 1, 2, 3, 4])
 def daily_review_reminder() -> None:
     card.blink = True
 
