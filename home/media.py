@@ -25,7 +25,7 @@ def reset_speakers() -> None:
     for speaker in MAIN_SPEAKERS[:-1]:
         speaker.set_volume(0.3)
 
-    media_player.portable.set_volume(0.2)
+    media_player.portable.set_volume(0.15)
     media_player.basement.set_volume(0.4)
     media_player.office.set_volume(0.25)
     media_player.living_room_tv.set_volume(0.1)
