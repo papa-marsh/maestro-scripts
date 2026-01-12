@@ -8,7 +8,7 @@ def ellie_bedtime_prep() -> None:
     switch.ellies_sound_machine.turn_on()
 
 
-@cron_trigger(hour=7)
+@cron_trigger(hour=8)
 def ellie_wakeup() -> None:
     switch.ellies_sound_machine.turn_off()
 
