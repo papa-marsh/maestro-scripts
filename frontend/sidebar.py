@@ -10,7 +10,7 @@ from maestro.triggers import (
     maestro_trigger,
     state_change_trigger,
 )
-from maestro.utils import local_now, log
+from maestro.utils import local_now
 from scripts.custom_domains.google_calendar import GoogleCalendar
 
 calendar_ids: list[GoogleCalendar] = [
@@ -25,17 +25,11 @@ calendar_ids: list[GoogleCalendar] = [
 @hass_trigger(HassEvent.STARTUP)
 @maestro_trigger(MaestroEvent.STARTUP)
 def initialize_sidebar_text_entity() -> None:
-    sidebar_text = build_sidebar_text()
-
-    _entity_data, created = StateManager().initialize_hass_entity(
+    StateManager().initialize_hass_entity(
         entity_id=EntityId("maestro.cast_sidebar_text"),
-        state=sidebar_text,
+        state=build_sidebar_text(),
         attributes={},
     )
-    if created:
-        log.info("Initialized entity for `maestro.cast_sidebar_text`")
-    else:
-        log.info("Entity `maestro.cast_sidebar_text` already exists. Skipping initialization")
 
 
 @cron_trigger("*/10 * * * *")
