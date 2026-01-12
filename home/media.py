@@ -7,10 +7,10 @@ MAIN_SPEAKERS: list[SonosSpeaker] = [
     media_player.living_room,
     media_player.craft_room,
     media_player.front_room,
-    media_player.portable,
 ]
 ALL_SPEAKERS: list[SonosSpeaker] = [
     *MAIN_SPEAKERS,
+    media_player.portable,
     media_player.basement,
     media_player.office,
 ]
@@ -22,7 +22,7 @@ def reset_speakers() -> None:
         speaker.pause()
         speaker.unmute()
 
-    for speaker in MAIN_SPEAKERS[:-1]:
+    for speaker in MAIN_SPEAKERS:
         speaker.set_volume(0.3)
 
     media_player.portable.set_volume(0.15)
