@@ -10,7 +10,7 @@ from maestro.triggers import (
     maestro_trigger,
     state_change_trigger,
 )
-from maestro.utils import local_now
+from maestro.utils import local_now, readable_relative_date
 from scripts.custom_domains.google_calendar import GoogleCalendar
 
 calendar_ids: list[GoogleCalendar] = [
@@ -39,7 +39,7 @@ def set_sidebar_text() -> None:
 
 
 def build_sidebar_text() -> str:
-    day_of_week = date.today().strftime("%A")
+    today = date.today().strftime("%A")
 
     if sun.sun.is_above_horizon:
         sun_action = "sets"
@@ -55,12 +55,13 @@ def build_sidebar_text() -> str:
         next_event = calendar_event
         break
 
-    next_up = f"Next up is {next_event.title}, {next_event.start.strftime('%A')}"
+    event_day = readable_relative_date(next_event.start)
+    next_up = f"Next up is {next_event.title}, {event_day}"
     if not next_event.all_day:
         next_up += f" at {next_event.start.strftime('%-I:%M %p')}"
 
     return f"""
-        <li>Happy {day_of_week}!</li>
+        <li>Happy {today}!</li>
         <li>The sun {sun_action} at {sun_time}.</li>
         <li>‎</li>
         <li>{next_up}.</li>
