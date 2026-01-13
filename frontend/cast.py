@@ -18,6 +18,7 @@ def call_cast_command(display: MediaPlayer) -> None:
     display.state_manager.hass_client.perform_action(
         domain=Domain.SHELL_COMMAND,
         action=f"cast_to_{display.id.entity}",
+        entity_id=display.id,
     )
 
 
