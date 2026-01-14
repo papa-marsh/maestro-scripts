@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from datetime import timedelta
 
-from maestro.domains import HOME, UNAVAILABLE, UNKNOWN, Entity
+from maestro.domains import UNAVAILABLE, UNKNOWN, Entity
 from maestro.registry import maestro
 from maestro.triggers import (
     HassEvent,
@@ -73,7 +73,7 @@ def set_row_1() -> None:
 
 @state_change_trigger(Nyx.location, Nyx.destination, Nyx.lock, Nyx.parked)
 def set_row_2() -> None:
-    if Nyx.location.state == HOME:
+    if Nyx.location.is_home:
         value = "Home"
         icon = Icon.HOME
         color = RowColor.DEFAULT

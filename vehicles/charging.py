@@ -1,4 +1,4 @@
-from maestro.domains import HOME, ON, UNAVAILABLE, UNKNOWN
+from maestro.domains import ON, UNAVAILABLE, UNKNOWN
 from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import cron_trigger, state_change_trigger
@@ -29,11 +29,10 @@ def charge_reminder() -> None:
     for vehicle in (Nyx, Tess):
         name = vehicle.__name__
 
-        is_home = vehicle.location.state == HOME
         unplugged = not vehicle.charger.is_on
         low_battery = float(vehicle.battery.state) < float(vehicle.charge_limit.state) - 20
 
-        if is_home and unplugged and low_battery:
+        if vehicle.location.is_home and unplugged and low_battery:
             Notif(
                 title=f"{name} Battery",
                 message=f"{name} is unplugged with only {vehicle.battery.state}% battery",

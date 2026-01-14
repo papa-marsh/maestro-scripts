@@ -25,7 +25,7 @@ def toggle_meeting_active() -> None:
 @state_change_trigger(maestro.meeting_active, to_state=ON)
 @state_change_trigger(person.emily, to_state=HOME)
 def send_meeting_notif() -> None:
-    if person.emily.state == HOME and maestro.meeting_active.state == ON:
+    if person.emily.is_home and maestro.meeting_active.state == ON:
         Notif(
             title="Dad's In a Meeting",
             message="Shhh",
