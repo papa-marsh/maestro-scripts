@@ -1,4 +1,4 @@
-from maestro.domains import HOME, ON
+from maestro.domains import HOME, ON, UNAVAILABLE, UNKNOWN
 from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import cron_trigger, state_change_trigger
@@ -12,6 +12,8 @@ DEFAULT_CHARGE_LIMIT = 80
 @state_change_trigger(Nyx.charger, Tess.charger, to_state=ON)
 def high_charge_limit(state_change: StateChangeEvent) -> None:
     vehicle = get_vehicle_config(state_change.entity_id)
+    if vehicle.charge_limit.state in [UNKNOWN, UNAVAILABLE]:
+        return
 
     if float(vehicle.charge_limit.state) > DEFAULT_CHARGE_LIMIT:
         name = vehicle.__name__

@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from datetime import timedelta
 
-from maestro.domains import HOME, UNAVAILABLE, UNKNOWN
+from maestro.domains import HOME, UNAVAILABLE, UNKNOWN, Entity
 from maestro.registry import maestro
 from maestro.triggers import (
     HassEvent,
@@ -94,8 +94,17 @@ def set_row_2() -> None:
     card.update(row_2_value=value, row_2_icon=icon, row_2_color=color)
 
 
-@state_change_trigger(Tess.parked, Tess.arrival_time, Tess.temperature_inside, Tess.climate)
+@state_change_trigger(Tess.parked, Tess.arrival_time, Tess.climate, Tess.temperature_inside)
 def set_row_3() -> None:
+    entities: list[Entity] = [Tess.temperature_inside, Tess.parked, Tess.arrival_time, Tess.climate]
+    if any(entity.state in [UNKNOWN, UNAVAILABLE] for entity in entities):
+        card.update(
+            row_3_value="Unavailable",
+            row_3_icon=Icon.THERMOMETER_OFF,
+            row_3_color=RowColor.DEFAULT,
+        )
+        return
+
     if not Tess.parked.is_on:
         now = local_now()
         seconds_remaining = (resolve_timestamp(Tess.arrival_time.state) - now).total_seconds()
@@ -111,10 +120,6 @@ def set_row_3() -> None:
                 job_id=ARRIVAL_TIME_RECHECK_JOB_ID,
             )
             return
-
-    if Tess.climate.state in [UNKNOWN, UNAVAILABLE]:
-        card.row_3_icon = Icon.THERMOMETER_OFF
-        return
 
     current_temp = int(float(Tess.temperature_inside.state))
     value = f"{current_temp}° F"
