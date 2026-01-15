@@ -130,9 +130,9 @@ def set_row_3() -> None:
 @cron_trigger(hour=2)
 def reset_stock_rows() -> None:
     card.update(
-        row_2_value=card.row_2_value.split(" ")[1],
+        row_2_value=card.row_2_value.split(" ")[0],
         row_2_color=RowColor.DEFAULT,
-        row_3_value=card.row_3_value.split(" ")[1],
+        row_3_value=card.row_3_value.split(" ")[0],
         row_3_color=RowColor.DEFAULT,
     )
 
