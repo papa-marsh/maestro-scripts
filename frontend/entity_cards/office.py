@@ -74,16 +74,10 @@ def set_row_1() -> None:
 
 def resolve_quote_display(quote: FinnhubResponse) -> tuple[str, RowColor]:
     price = quote.c
-    change_percent = quote.dp * 100
     plus_sign = "+" if quote.dp >= 0 else ""
-    value = f"${price:.0f} ({plus_sign}{change_percent:.0f}%)"
-    color = (
-        RowColor.GREEN
-        if change_percent > 5
-        else RowColor.RED
-        if change_percent < -5
-        else RowColor.DEFAULT
-    )
+    value = f"${price:.0f} ({plus_sign}{quote.dp:.0f}%)"
+    color = RowColor.GREEN if quote.dp > 5 else RowColor.RED if quote.dp < -5 else RowColor.DEFAULT
+
     return value, color
 
 
