@@ -12,7 +12,8 @@ from maestro.triggers import (
     state_change_trigger,
 )
 from scripts.common.event_type import UIEvent, ui_event_trigger
-from scripts.frontend.common.entity_card import EntityCardAttributes
+from scripts.common.finance import FinnhubResponse, get_stock_quote
+from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
 from scripts.frontend.common.icons import Icon
 from scripts.home.office.meetings import toggle_meeting_active
 
@@ -67,8 +68,35 @@ def set_row_1() -> None:
     card.update(row_1_value=value, row_1_icon=icon)
 
 
-def set_row_2() -> None: ...
-def set_row_3() -> None: ...
+def resolve_quote_display(quote: FinnhubResponse) -> tuple[str, RowColor]:
+    price = quote.c
+    change_percent = quote.dp * 100
+    plus_sign = "+" if quote.dp >= 0 else ""
+    value = f"${price:.0f} ({plus_sign}{change_percent:.0f}%)"
+    color = (
+        RowColor.GREEN
+        if change_percent > 5
+        else RowColor.RED
+        if change_percent < -5
+        else RowColor.DEFAULT
+    )
+    return value, color
+
+
+@cron_trigger("* 9-16 * * 1-5")
+def set_stock_rows() -> None:
+    spy_quote = get_stock_quote("SPY")
+    spy_value, spy_color = resolve_quote_display(spy_quote)
+
+    net_quote = get_stock_quote("NET")
+    net_value, net_color = resolve_quote_display(net_quote)
+
+    card.update(
+        row_2_value=spy_value,
+        row_2_color=spy_color,
+        row_3_value=net_value,
+        row_3_color=net_color,
+    )
 
 
 @cron_trigger(hour=8, minute=30, day_of_week=[0, 1, 2, 3, 4])
@@ -83,10 +111,6 @@ def handle_tap() -> None:
         return
 
     toggle_meeting_active()
-
-
-@ui_event_trigger(UIEvent.ENTITY_CARD_4_DOUBLE_TAP)
-def handle_double_tap() -> None: ...  # Toggle finance view
 
 
 @ui_event_trigger(UIEvent.ENTITY_CARD_4_HOLD)
