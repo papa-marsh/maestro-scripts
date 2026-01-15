@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from datetime import datetime
 
 from maestro.domains import ON, UNAVAILABLE, UNKNOWN
 from maestro.integrations import StateChangeEvent
@@ -11,6 +12,7 @@ from maestro.triggers import (
     maestro_trigger,
     state_change_trigger,
 )
+from maestro.utils import IntervalSeconds
 from scripts.common.event_type import UIEvent, ui_event_trigger
 from scripts.common.finance import FinnhubResponse, get_stock_quote
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
@@ -18,6 +20,8 @@ from scripts.frontend.common.icons import Icon
 from scripts.home.office.meetings import toggle_meeting_active
 
 card = maestro.entity_card_4
+
+STOCK_LAST_UPDATED_PREFIX = "stock_last_updated"
 
 
 @hass_trigger(HassEvent.STARTUP)
@@ -84,18 +88,58 @@ def resolve_quote_display(quote: FinnhubResponse) -> tuple[str, RowColor]:
 
 
 @cron_trigger("* 9-16 * * 1-5")
-def set_stock_rows() -> None:
-    spy_quote = get_stock_quote("SPY")
-    spy_value, spy_color = resolve_quote_display(spy_quote)
+def set_row_2() -> None:
+    redis = card.state_manager.redis_client
+    last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, "spy")
+    last_updated_iso = redis.get(last_updated_key)
 
-    net_quote = get_stock_quote("NET")
-    net_value, net_color = resolve_quote_display(net_quote)
+    quote = get_stock_quote("SPY")
+    quote_timestamp = datetime.fromtimestamp(quote.t)
 
+    if last_updated_iso and quote_timestamp <= datetime.fromisoformat(last_updated_iso):
+        return
+
+    value, color = resolve_quote_display(quote)
+
+    card.update(row_2_value=value, row_2_color=color)
+
+    card.state_manager.redis_client.set(
+        key=last_updated_key,
+        value=quote_timestamp.isoformat(),
+        ttl_seconds=IntervalSeconds.ONE_WEEK,
+    )
+
+
+@cron_trigger("* 9-16 * * 1-5")
+def set_row_3() -> None:
+    redis = card.state_manager.redis_client
+    last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, "net")
+    last_updated_iso = redis.get(last_updated_key)
+
+    quote = get_stock_quote("NET")
+    quote_timestamp = datetime.fromtimestamp(quote.t)
+
+    if last_updated_iso and quote_timestamp <= datetime.fromisoformat(last_updated_iso):
+        return
+
+    value, color = resolve_quote_display(quote)
+
+    card.update(row_2_value=value, row_2_color=color)
+
+    card.state_manager.redis_client.set(
+        key=last_updated_key,
+        value=quote_timestamp.isoformat(),
+        ttl_seconds=IntervalSeconds.ONE_WEEK,
+    )
+
+
+@cron_trigger(hour=2)
+def reset_stock_rows() -> None:
     card.update(
-        row_2_value=spy_value,
-        row_2_color=spy_color,
-        row_3_value=net_value,
-        row_3_color=net_color,
+        row_2_value=card.row_2_value.split(" ")[1],
+        row_2_color=RowColor.DEFAULT,
+        row_3_value=card.row_3_value.split(" ")[1],
+        row_3_color=RowColor.DEFAULT,
     )
 
 
