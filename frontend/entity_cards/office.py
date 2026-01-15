@@ -118,7 +118,7 @@ def set_row_3() -> None:
 
     value, color = resolve_quote_display(quote)
 
-    card.update(row_2_value=value, row_2_color=color)
+    card.update(row_3_value=value, row_3_color=color)
 
     card.state_manager.redis_client.set(
         key=last_updated_key,
