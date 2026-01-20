@@ -31,7 +31,7 @@ def initialize_card() -> None:
         attributes=asdict(attributes),
         restore_cached=True,
     )
-    card.update(title=attributes.title)
+    card.update(title=attributes.title, row_2_icon=Icon.Z_WAVE, row_3_icon=Icon.THERMOMETER)
 
 
 @cron_trigger("* * * * *")
