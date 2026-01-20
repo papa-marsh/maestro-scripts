@@ -41,7 +41,7 @@ def set_state() -> None:
         or update.home_assistant_supervisor_update.state == ON
     )
     if not check_internet_connection():
-        state = "Disconnected"
+        state = "Offline"
         icon = Icon.WEB_OFF
         blink = True
     else:
