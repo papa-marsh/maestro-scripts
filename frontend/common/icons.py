@@ -27,6 +27,7 @@ class Icon(StrEnum):
     NAVIGATION = "mdi:navigation"
     PROGRESS_QUESTION = "mdi:progress-question"
     RADIATOR = "mdi:radiator"
+    RASPBERRY_PI = "mdi:raspberry-pi"
     ROAD_VARIANT = "mdi:road-variant"
     SLEEP = "mdi:sleep"
     SNOWFLAKE = "mdi:snowflake"
