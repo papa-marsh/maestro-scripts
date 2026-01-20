@@ -26,7 +26,7 @@ ARRIVAL_TIME_RECHECK_JOB_ID = "nyx_arrival_time_recheck"
 def initialize_card() -> None:
     attributes = EntityCardAttributes(
         title="Nyx",
-        icon=Icon.CAR_ELECTRIC,
+        icon=Icon.CAR_ELECTRIC_OUTLINE,
     )
     card.state_manager.initialize_hass_entity(
         entity_id=card.id,
@@ -49,7 +49,7 @@ def set_state() -> None:
         active = True
     else:
         state = "Air Off"
-        icon = Icon.UPDATE if Nyx.software_update.is_on else Icon.CAR_ELECTRIC
+        icon = Icon.UPDATE if Nyx.software_update.is_on else Icon.CAR_ELECTRIC_OUTLINE
         active = False
 
     card.update(state=state, icon=icon, active=active)
