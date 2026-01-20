@@ -18,6 +18,7 @@ class Icon(StrEnum):
     HEADSET = "mdi:headset"
     HELP = "mdi:help"
     HOME = "mdi:home"
+    HOME_ASSISTANT = "mdi:home-assistant"
     HVAC = "mdi:hvac"
     HVAC_OFF = "mdi:hvac-off"
     LOCK = "mdi:lock"
@@ -31,11 +32,14 @@ class Icon(StrEnum):
     ROAD_VARIANT = "mdi:road-variant"
     SLEEP = "mdi:sleep"
     SNOWFLAKE = "mdi:snowflake"
+    STORE = "mdi:store"
     TIMER_OUTLINE = "mdi:timer-outline"
     THERMOMETER = "mdi:thermometer"
     THERMOMETER_OFF = "mdi:thermometer-off"
     THERMOMETER_WATER = "mdi:thermometer-water"
     UPDATE = "mdi:update"
+    WEB_OFF = "mdi:web-off"
+    Z_WAVE = "mdi:z-wave"
 
 
 def battery_icon(battery: float, charging: bool = False, full_threshold: int = 100) -> str:
