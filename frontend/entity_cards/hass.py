@@ -55,14 +55,14 @@ def set_state() -> None:
 @state_change_trigger(binary_sensor.z_wave_js_running)
 def set_row_2() -> None:
     value = "Running" if binary_sensor.z_wave_js_running.is_on else "Not Running"
-    color = RowColor.RED if binary_sensor.z_wave_js_running.is_on else RowColor.DEFAULT
+    color = RowColor.DEFAULT if binary_sensor.z_wave_js_running.is_on else RowColor.RED
     card.update(row_2_value=value, row_2_color=color)
 
 
 @state_change_trigger(sensor.cpu_temperature)
 def set_row_3() -> None:
     cpu_temp = float(sensor.cpu_temperature.state)
-    value = f"{cpu_temp} °F"
+    value = f"{cpu_temp:.0f} °F"
     color = RowColor.RED if cpu_temp >= 110 else RowColor.DEFAULT
     card.update(row_3_value=value, row_3_color=color)
 
