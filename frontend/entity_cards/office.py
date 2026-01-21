@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from datetime import datetime
+from time import sleep
 
 from maestro.domains import ON, UNAVAILABLE, UNKNOWN
 from maestro.integrations import StateChangeEvent
@@ -15,6 +16,7 @@ from maestro.triggers import (
 from maestro.utils import IntervalSeconds, log
 from scripts.common.event_type import UIEvent, ui_event_trigger
 from scripts.common.finance import FinnhubResponse, get_stock_quote
+from scripts.config.secrets import ANNUAL_NET_SHARES
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
 from scripts.frontend.common.icons import Icon
 from scripts.home.office.meetings import toggle_meeting_active
@@ -22,6 +24,7 @@ from scripts.home.office.meetings import toggle_meeting_active
 card = maestro.entity_card_4
 
 STOCK_LAST_UPDATED_PREFIX = "stock_last_updated"
+STOCK_DISPLAY_LOCK_KEY = "stock_display_lock"
 
 
 @hass_trigger(HassEvent.STARTUP)
@@ -161,6 +164,33 @@ def handle_tap() -> None:
         return
 
     toggle_meeting_active()
+
+
+@ui_event_trigger(UIEvent.ENTITY_CARD_4_DOUBLE_TAP)
+def handle_double_tap() -> None:
+    try:
+        quote = get_stock_quote("NET")
+    except Exception:
+        log.exception("Finnhub API request failed")
+        card.update(row_2_value="Failed :(", row_3_value="Failed :(")
+        return
+
+    annual_vest = quote.c * ANNUAL_NET_SHARES
+    quarterly_vest = annual_vest / 4
+
+    card.update(
+        row_2_value=f"${quarterly_vest:6.2f}",
+        row_3_value=f"${annual_vest:6.2f}",
+    )
+
+    sleep(10)
+
+    redis = card.state_manager.redis_client
+    last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, "net")
+    redis.delete(last_updated_key)
+
+    set_row_2()
+    set_row_3()
 
 
 @ui_event_trigger(UIEvent.ENTITY_CARD_4_HOLD)
