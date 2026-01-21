@@ -190,6 +190,7 @@ def handle_double_tap() -> None:
     redis.delete(last_updated_key)
 
     set_row_2()
+    sleep(0.250)
     set_row_3()
 
 
