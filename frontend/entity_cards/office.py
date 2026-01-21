@@ -12,7 +12,7 @@ from maestro.triggers import (
     maestro_trigger,
     state_change_trigger,
 )
-from maestro.utils import IntervalSeconds
+from maestro.utils import IntervalSeconds, log
 from scripts.common.event_type import UIEvent, ui_event_trigger
 from scripts.common.finance import FinnhubResponse, get_stock_quote
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
@@ -87,7 +87,13 @@ def set_row_2() -> None:
     last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, "spy")
     last_updated_iso = redis.get(last_updated_key)
 
-    quote = get_stock_quote("SPY")
+    try:
+        quote = get_stock_quote("SPY")
+    except Exception as e:
+        log.error("Finnhub API request failed", exception_type=type(e).__name__)
+        card.row_2_value = "API Failure"
+        return
+
     quote_timestamp = datetime.fromtimestamp(quote.t)
 
     if last_updated_iso and quote_timestamp <= datetime.fromisoformat(last_updated_iso):
@@ -110,7 +116,13 @@ def set_row_3() -> None:
     last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, "net")
     last_updated_iso = redis.get(last_updated_key)
 
-    quote = get_stock_quote("NET")
+    try:
+        quote = get_stock_quote("NET")
+    except Exception as e:
+        log.error("Finnhub API request failed", exception_type=type(e).__name__)
+        card.row_3_value = "API Failure"
+        return
+
     quote_timestamp = datetime.fromtimestamp(quote.t)
 
     if last_updated_iso and quote_timestamp <= datetime.fromisoformat(last_updated_iso):
