@@ -190,7 +190,7 @@ def handle_double_tap() -> None:
     redis.delete(last_updated_key)
 
     set_row_2()
-    sleep(0.250)
+    sleep(0.250)  # TODO: This shouldn't be necessary. Why doesn't the entity lock work?
     set_row_3()
 
 
