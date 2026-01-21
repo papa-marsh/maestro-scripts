@@ -179,8 +179,8 @@ def handle_double_tap() -> None:
     quarterly_vest = annual_vest / 4
 
     card.update(
-        row_2_value=f"${quarterly_vest:6.2f}",
-        row_3_value=f"${annual_vest:6.2f}",
+        row_2_value=f"${quarterly_vest:,.2f}",
+        row_3_value=f"${annual_vest:,.2f}",
     )
 
     sleep(10)
