@@ -25,6 +25,7 @@ class Icon(StrEnum):
     LOCK_OPEN_VARIANT = "mdi:lock-open-variant"
     LOCK_QUESTION = "mdi:lock-question"
     MAP_CLOCK = "mdi:map-clock"
+    MEMORY = "mdi:memory"
     NAVIGATION = "mdi:navigation"
     PROGRESS_QUESTION = "mdi:progress-question"
     RADIATOR = "mdi:radiator"

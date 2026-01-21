@@ -31,7 +31,12 @@ def initialize_card() -> None:
         attributes=asdict(attributes),
         restore_cached=True,
     )
-    card.update(title=attributes.title, row_2_icon=Icon.Z_WAVE, row_3_icon=Icon.THERMOMETER)
+    card.update(
+        title=attributes.title,
+        row_1_icon=Icon.Z_WAVE,
+        row_2_icon=Icon.THERMOMETER,
+        row_3_icon=Icon.MEMORY,
+    )
 
 
 @cron_trigger("* * * * *")
@@ -53,17 +58,25 @@ def set_state() -> None:
 
 
 @state_change_trigger(binary_sensor.z_wave_js_running)
-def set_row_2() -> None:
+def set_row_1() -> None:
     value = "Running" if binary_sensor.z_wave_js_running.is_on else "Not Running"
     color = RowColor.DEFAULT if binary_sensor.z_wave_js_running.is_on else RowColor.RED
-    card.update(row_2_value=value, row_2_color=color)
+    card.update(row_1_value=value, row_1_color=color)
 
 
 @state_change_trigger(sensor.cpu_temperature)
-def set_row_3() -> None:
+def set_row_2() -> None:
     cpu_temp = float(sensor.cpu_temperature.state)
     value = f"{cpu_temp:.0f} °F"
     color = RowColor.RED if cpu_temp >= 110 else RowColor.DEFAULT
+    card.update(row_2_value=value, row_2_color=color)
+
+
+@state_change_trigger(sensor.memory_use_percent)
+def set_row_3() -> None:
+    memory_use = float(sensor.memory_use_percent.state)
+    value = f"{memory_use:.1f}%"
+    color = RowColor.RED if memory_use >= 85 else RowColor.DEFAULT
     card.update(row_3_value=value, row_3_color=color)
 
 
