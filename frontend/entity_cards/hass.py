@@ -1,6 +1,7 @@
 import socket
 from contextlib import suppress
 from dataclasses import asdict
+from datetime import timedelta
 
 from maestro.domains import ON
 from maestro.registry import binary_sensor, maestro, sensor, update
@@ -12,10 +13,14 @@ from maestro.triggers import (
     maestro_trigger,
     state_change_trigger,
 )
+from maestro.utils import JobScheduler
+from maestro.utils.dates import local_now
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
 from scripts.frontend.common.icons import Icon
 
 card = maestro.entity_card_6
+
+ZWAVE_CHECK_JOB_ID = "post_startup_zwave_check"
 
 
 @hass_trigger(HassEvent.STARTUP)
@@ -55,6 +60,12 @@ def set_state() -> None:
         blink = False
 
     card.update(state=state, icon=icon, active=update_available, blink=blink)
+
+
+@hass_trigger(HassEvent.STARTUP)
+def post_startup_zwave_check() -> None:
+    in_five_minutes = local_now() + timedelta(minutes=5)
+    JobScheduler().schedule_job(run_time=in_five_minutes, func=set_row_1, job_id=ZWAVE_CHECK_JOB_ID)
 
 
 @state_change_trigger(binary_sensor.z_wave_js_running)
