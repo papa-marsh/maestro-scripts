@@ -22,7 +22,7 @@ def call_cast_command(display: MediaPlayer) -> None:
     )
 
 
-# @cron_trigger("*/10 * * * *")
+@cron_trigger("*/10 * * * *")
 def cast_to_displays(force_reset: bool = False) -> None:
     with RedisClient().lock(CAST_LOCK_KEY, timeout_seconds=180, exit_if_owned=True):
         for display in NEST_DISPLAYS:
