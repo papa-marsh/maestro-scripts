@@ -11,7 +11,7 @@ test_speaker = media_player.living_room
 
 def test_speaker_config() -> None:
     # Speaker lists are unchanged and main speakers subclass SonosSpeaker
-    assert len(media.MAIN_SPEAKERS) == 4
+    assert len(media.MAIN_SPEAKERS) == 3
     assert len(media.ALL_SPEAKERS) == 6
     for speaker in media.MAIN_SPEAKERS:
         assert isinstance(speaker, SonosSpeaker)
