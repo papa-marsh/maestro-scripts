@@ -105,14 +105,14 @@ def fetch_stock(symbol: str) -> tuple[str, RowColor] | None:
     return value, color
 
 
-@cron_trigger("*/4 9-16 * * 1-5")
+@cron_trigger("*/2 9-16 * * 1-5")
 def set_row_2() -> None:
     if result := fetch_stock("SPY"):
         value, color = result
         card.update(row_2_value=value, row_2_color=color)
 
 
-@cron_trigger("1-59/4 9-16 * * 1-5")
+@cron_trigger("1-59/2 9-16 * * 1-5")
 def set_row_3() -> None:
     if result := fetch_stock("NET"):
         value, color = result
