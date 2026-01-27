@@ -15,7 +15,7 @@ from maestro.triggers import (
 )
 from maestro.utils import IntervalSeconds, log
 from scripts.common.event_type import UIEvent, ui_event_trigger
-from scripts.common.finance import FinnhubResponse, get_stock_quote
+from scripts.common.finance import get_stock_quote
 from scripts.config.secrets import ANNUAL_NET_SHARES
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
 from scripts.frontend.common.icons import Icon
@@ -75,71 +75,48 @@ def set_row_1() -> None:
     card.update(row_1_value=value, row_1_icon=icon)
 
 
-def resolve_quote_display(quote: FinnhubResponse) -> tuple[str, RowColor]:
-    price = quote.c
+def fetch_stock(symbol: str) -> tuple[str, RowColor] | None:
+    """Fetch stock quote and return current display value and color"""
+    redis = card.state_manager.redis_client
+    last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, symbol.lower())
+    last_updated_iso = redis.get(last_updated_key)
+
+    try:
+        quote = get_stock_quote(symbol)
+    except Exception as e:
+        log.error("Finnhub API request failed", exception_type=type(e).__name__)
+        return "API Error", RowColor.DEFAULT
+
+    quote_timestamp = datetime.fromtimestamp(quote.t)
+
+    if last_updated_iso and quote_timestamp <= datetime.fromisoformat(last_updated_iso):
+        return None
+
     plus_sign = "+" if quote.dp >= 0 else ""
-    value = f"${price:.0f} ({plus_sign}{quote.dp:.0f}%)"
+    value = f"${quote.c:.0f} ({plus_sign}{quote.dp:.0f}%)"
     color = RowColor.GREEN if quote.dp > 5 else RowColor.RED if quote.dp < -5 else RowColor.DEFAULT
+
+    redis.set(
+        key=last_updated_key,
+        value=quote_timestamp.isoformat(),
+        ttl_seconds=IntervalSeconds.ONE_WEEK,
+    )
 
     return value, color
 
 
 @cron_trigger("*/4 9-16 * * 1-5")
 def set_row_2() -> None:
-    redis = card.state_manager.redis_client
-    last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, "spy")
-    last_updated_iso = redis.get(last_updated_key)
-
-    try:
-        quote = get_stock_quote("SPY")
-    except Exception as e:
-        log.error("Finnhub API request failed", exception_type=type(e).__name__)
-        card.row_2_value = "API Failure"
-        return
-
-    quote_timestamp = datetime.fromtimestamp(quote.t)
-
-    if last_updated_iso and quote_timestamp <= datetime.fromisoformat(last_updated_iso):
-        return
-
-    value, color = resolve_quote_display(quote)
-
-    card.update(row_2_value=value, row_2_color=color)
-
-    card.state_manager.redis_client.set(
-        key=last_updated_key,
-        value=quote_timestamp.isoformat(),
-        ttl_seconds=IntervalSeconds.ONE_WEEK,
-    )
+    if result := fetch_stock("SPY"):
+        value, color = result
+        card.update(row_2_value=value, row_2_color=color)
 
 
 @cron_trigger("1-59/4 9-16 * * 1-5")
 def set_row_3() -> None:
-    redis = card.state_manager.redis_client
-    last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, "net")
-    last_updated_iso = redis.get(last_updated_key)
-
-    try:
-        quote = get_stock_quote("NET")
-    except Exception as e:
-        log.error("Finnhub API request failed", exception_type=type(e).__name__)
-        card.row_3_value = "API Failure"
-        return
-
-    quote_timestamp = datetime.fromtimestamp(quote.t)
-
-    if last_updated_iso and quote_timestamp <= datetime.fromisoformat(last_updated_iso):
-        return
-
-    value, color = resolve_quote_display(quote)
-
-    card.update(row_3_value=value, row_3_color=color)
-
-    card.state_manager.redis_client.set(
-        key=last_updated_key,
-        value=quote_timestamp.isoformat(),
-        ttl_seconds=IntervalSeconds.ONE_WEEK,
-    )
+    if result := fetch_stock("NET"):
+        value, color = result
+        card.update(row_3_value=value, row_3_color=color)
 
 
 @cron_trigger(hour=2)
@@ -183,15 +160,24 @@ def handle_double_tap() -> None:
         row_3_value=f"${annual_vest:,.0f}",
     )
 
-    sleep(10)
+    sleep(5)
 
     redis = card.state_manager.redis_client
-    last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, "net")
-    redis.delete(last_updated_key)
+    redis.delete(redis.build_key(STOCK_LAST_UPDATED_PREFIX, "net"))
 
-    set_row_2()
-    sleep(0.250)  # TODO: This shouldn't be necessary. Why doesn't the entity lock work?
-    set_row_3()
+    attr_updates = {}
+
+    if spy_result := fetch_stock("spy"):
+        value, color = spy_result
+        attr_updates["row_2_value"] = value
+        attr_updates["row_2_color"] = color
+
+    if spy_result := fetch_stock("net"):
+        value, color = spy_result
+        attr_updates["row_3_value"] = value
+        attr_updates["row_3_color"] = color
+
+    card.update(**attr_updates)
 
 
 @ui_event_trigger(UIEvent.ENTITY_CARD_4_HOLD)
