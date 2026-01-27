@@ -24,7 +24,7 @@ def initialize_sidebar_text_entity() -> None:
     )
 
 
-@cron_trigger("* * * * *")
+@cron_trigger(hour=0)
 def set_sidebar_text() -> None:
     maestro.cast_sidebar_text.state = build_sidebar_text()
 
