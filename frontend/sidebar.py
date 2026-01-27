@@ -1,16 +1,8 @@
 from datetime import date
 
 from maestro.integrations import EntityId, StateManager
-from maestro.registry import calendar, maestro, sun
-from maestro.triggers import (
-    HassEvent,
-    MaestroEvent,
-    cron_trigger,
-    hass_trigger,
-    maestro_trigger,
-    state_change_trigger,
-)
-from maestro.utils import local_now, readable_relative_date
+from maestro.registry import calendar, maestro
+from maestro.triggers import HassEvent, MaestroEvent, cron_trigger, hass_trigger, maestro_trigger
 from scripts.custom_domains.google_calendar import GoogleCalendar
 
 calendar_ids: list[GoogleCalendar] = [
@@ -32,8 +24,7 @@ def initialize_sidebar_text_entity() -> None:
     )
 
 
-@cron_trigger("*/10 * * * *")
-@state_change_trigger(*calendar_ids, sun.sun)
+@cron_trigger("* * * * *")
 def set_sidebar_text() -> None:
     maestro.cast_sidebar_text.state = build_sidebar_text()
 
@@ -41,28 +32,7 @@ def set_sidebar_text() -> None:
 def build_sidebar_text() -> str:
     today = date.today().strftime("%A")
 
-    if sun.sun.is_above_horizon:
-        sun_action = "sets"
-        sun_time = sun.sun.next_setting.strftime("%-I:%M %p")
-    else:
-        sun_action = "rises"
-        sun_time = sun.sun.next_rising.strftime("%-I:%M %p")
-
-    upcoming_events = calendar.family.get_gcal_events(days=7, calendar_ids=calendar_ids)
-    for calendar_event in upcoming_events:
-        if calendar_event.start < local_now():
-            continue
-        next_event = calendar_event
-        break
-
-    event_day = readable_relative_date(next_event.start)
-    next_up = f"Next up is {next_event.title}, {event_day}"
-    if not next_event.all_day:
-        next_up += f" at {next_event.start.strftime('%-I:%M %p')}"
-
     return f"""
         <li>Happy {today}!</li>
-        <li>The sun {sun_action} at {sun_time}.</li>
         <li>‎</li>
-        <li>{next_up}.</li>
     """

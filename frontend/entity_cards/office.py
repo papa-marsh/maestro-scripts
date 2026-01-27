@@ -84,7 +84,7 @@ def resolve_quote_display(quote: FinnhubResponse) -> tuple[str, RowColor]:
     return value, color
 
 
-@cron_trigger("* 9-16 * * 1-5")
+@cron_trigger("*/4 9-16 * * 1-5")
 def set_row_2() -> None:
     redis = card.state_manager.redis_client
     last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, "spy")
@@ -113,7 +113,7 @@ def set_row_2() -> None:
     )
 
 
-@cron_trigger("* 9-16 * * 1-5")
+@cron_trigger("1-59/4 9-16 * * 1-5")
 def set_row_3() -> None:
     redis = card.state_manager.redis_client
     last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, "net")
