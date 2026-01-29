@@ -13,9 +13,9 @@ from maestro.triggers import (
     maestro_trigger,
     state_change_trigger,
 )
-from maestro.utils import IntervalSeconds, log
+from maestro.utils import IntervalSeconds, local_now, log
 from scripts.common.event_type import UIEvent, ui_event_trigger
-from scripts.common.finance import get_stock_quote
+from scripts.common.finance import NET_SYMBOL, SPY_SYMBOL, get_stock_quote
 from scripts.config.secrets import ANNUAL_NET_SHARES
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
 from scripts.frontend.common.icons import Icon
@@ -75,7 +75,7 @@ def set_row_1() -> None:
     card.update(row_1_value=value, row_1_icon=icon)
 
 
-def fetch_stock(symbol: str) -> tuple[str, RowColor] | None:
+def build_stock_row(symbol: str, detailed: bool = True) -> tuple[str, RowColor] | None:
     """Fetch stock quote and return current display value and color"""
     redis = card.state_manager.redis_client
     last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, symbol.lower())
@@ -92,9 +92,13 @@ def fetch_stock(symbol: str) -> tuple[str, RowColor] | None:
     if last_updated_iso and quote_timestamp <= datetime.fromisoformat(last_updated_iso):
         return None
 
-    plus_sign = "+" if quote.dp >= 0 else ""
-    value = f"${quote.c:.0f} ({plus_sign}{quote.dp:.0f}%)"
-    color = RowColor.GREEN if quote.dp > 5 else RowColor.RED if quote.dp < -5 else RowColor.DEFAULT
+    value = f"${quote.c:.0f}"
+    color = RowColor.DEFAULT
+
+    if detailed:
+        plus_sign = "+" if quote.dp >= 0 else ""
+        value += f" ({plus_sign}{quote.dp:.0f}%)"
+        color = RowColor.GREEN if quote.dp > 5 else RowColor.RED if quote.dp < -5 else color
 
     redis.set(
         key=last_updated_key,
@@ -105,31 +109,29 @@ def fetch_stock(symbol: str) -> tuple[str, RowColor] | None:
     return value, color
 
 
-@cron_trigger("*/2 9-16 * * 1-5")
-def set_row_2() -> None:
-    if result := fetch_stock("SPY"):
-        value, color = result
-        card.update(row_2_value=value, row_2_color=color)
+@cron_trigger("* 9-16 * * 1-5")
+def set_stock_rows(detailed: bool = True) -> None:
+    attr_updates = {}
+
+    if spy_result := build_stock_row(SPY_SYMBOL, detailed=detailed):
+        value, color = spy_result
+        attr_updates["row_2_value"] = value
+        attr_updates["row_2_color"] = color
+
+    if spy_result := build_stock_row(NET_SYMBOL, detailed=detailed):
+        value, color = spy_result
+        attr_updates["row_3_value"] = value
+        attr_updates["row_3_color"] = color
+
+    card.update(**attr_updates)
 
 
-@cron_trigger("1-59/2 9-16 * * 1-5")
-def set_row_3() -> None:
-    if result := fetch_stock("NET"):
-        value, color = result
-        card.update(row_3_value=value, row_3_color=color)
-
-
-@cron_trigger(hour=2)
+@cron_trigger(hour=20)
 def reset_stock_rows() -> None:
-    card.update(
-        row_2_value=card.row_2_value.split(" ")[0],
-        row_2_color=RowColor.DEFAULT,
-        row_3_value=card.row_3_value.split(" ")[0],
-        row_3_color=RowColor.DEFAULT,
-    )
+    set_stock_rows(detailed=False)
 
 
-@cron_trigger(hour=8, minute=30, day_of_week=[0, 1, 2, 3, 4])
+@cron_trigger(hour=8, minute=20, day_of_week=[0, 1, 2, 3, 4])
 def daily_review_reminder() -> None:
     card.blink = True
 
@@ -146,7 +148,7 @@ def handle_tap() -> None:
 @ui_event_trigger(UIEvent.ENTITY_CARD_4_DOUBLE_TAP)
 def handle_double_tap() -> None:
     try:
-        quote = get_stock_quote("NET")
+        quote = get_stock_quote(NET_SYMBOL)
     except Exception:
         log.exception("Finnhub API request failed")
         card.update(row_2_value="Failed :(", row_3_value="Failed :(")
@@ -163,21 +165,11 @@ def handle_double_tap() -> None:
     sleep(5)
 
     redis = card.state_manager.redis_client
-    redis.delete(redis.build_key(STOCK_LAST_UPDATED_PREFIX, "net"))
+    redis.delete(redis.build_key(STOCK_LAST_UPDATED_PREFIX, NET_SYMBOL))
 
-    attr_updates = {}
-
-    if spy_result := fetch_stock("spy"):
-        value, color = spy_result
-        attr_updates["row_2_value"] = value
-        attr_updates["row_2_color"] = color
-
-    if spy_result := fetch_stock("net"):
-        value, color = spy_result
-        attr_updates["row_3_value"] = value
-        attr_updates["row_3_color"] = color
-
-    card.update(**attr_updates)
+    now = local_now()
+    show_details = (9 <= now.hour < 5) and (0 <= now.weekday() <= 4)
+    set_stock_rows(detailed=show_details)
 
 
 @ui_event_trigger(UIEvent.ENTITY_CARD_4_HOLD)

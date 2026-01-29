@@ -6,6 +6,9 @@ from scripts.config.secrets import FINNHUB_TOKEN
 
 FINNHUB_BASE_URL = "https://finnhub.io/api/v1"
 
+SPY_SYMBOL = "SPY"
+NET_SYMBOL = "NET"
+
 
 @dataclass
 class FinnhubResponse:
@@ -25,7 +28,7 @@ class FinnhubResponse:
     t: float  # Update Timestamp
 
 
-def get_stock_quote(symbol: str = "SPY") -> FinnhubResponse:
+def get_stock_quote(symbol: str = SPY_SYMBOL) -> FinnhubResponse:
     """Returns a stock quote for the given stock symbol"""
     url = f"{FINNHUB_BASE_URL}/quote"
     params = {"symbol": symbol.upper(), "token": FINNHUB_TOKEN}
