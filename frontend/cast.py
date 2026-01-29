@@ -12,23 +12,24 @@ NEST_DISPLAYS: list[MediaPlayer] = [
     media_player.kitchen_display,
 ]
 
-CAST_LOCK_KEY = "cast_lock"
+CAST_LOCK_KEY_PREFIX = "cast_lock_"
 
 
 def call_cast_command(display: MediaPlayer) -> None:
-    try:
-        display.state_manager.hass_client.perform_action(
-            domain=Domain.SHELL_COMMAND,
-            action=f"cast_to_{display.id.entity}",
-            entity_id=display.id,
-        )
-    except exceptions.HomeAssistantClientError:
-        log.info("Attempted to cast and got HomeAssistantClientError", target=display.id)
+    lock_key = CAST_LOCK_KEY_PREFIX + display.id.entity
+    with RedisClient().lock(lock_key, timeout_seconds=100, exit_if_owned=True):
+        try:
+            display.state_manager.hass_client.perform_action(
+                domain=Domain.SHELL_COMMAND,
+                action=f"cast_to_{display.id.entity}",
+                entity_id=display.id,
+            )
+        except exceptions.HomeAssistantClientError:
+            log.info("Attempted to cast and got HomeAssistantClientError", target=display.id)
 
 
 @cron_trigger("*/10 * * * *")
 def cast_to_displays() -> None:
-    with RedisClient().lock(CAST_LOCK_KEY, timeout_seconds=60, exit_if_owned=True):
-        for display in NEST_DISPLAYS:
-            call_cast_command(display)
-            sleep(60)
+    for display in NEST_DISPLAYS:
+        call_cast_command(display)
+        sleep(90)
