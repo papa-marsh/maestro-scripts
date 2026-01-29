@@ -90,7 +90,7 @@ def build_stock_row(symbol: str, detailed: bool = True) -> tuple[str, RowColor] 
     quote_timestamp = datetime.fromtimestamp(quote.t)
 
     if last_updated_iso and quote_timestamp <= datetime.fromisoformat(last_updated_iso):
-        return None
+        detailed = False
 
     value = f"${quote.c:.0f}"
     color = RowColor.DEFAULT
@@ -159,7 +159,9 @@ def handle_double_tap() -> None:
 
     card.update(
         row_2_value=f"${quarterly_vest:,.0f}",
+        row_2_color=RowColor.DEFAULT,
         row_3_value=f"${annual_vest:,.0f}",
+        row_3_color=RowColor.DEFAULT,
     )
 
     sleep(5)
