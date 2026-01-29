@@ -13,7 +13,7 @@ from maestro.triggers import (
     maestro_trigger,
     state_change_trigger,
 )
-from maestro.utils import IntervalSeconds, local_now, log
+from maestro.utils import local_now, log
 from scripts.common.event_type import UIEvent, ui_event_trigger
 from scripts.common.finance import NET_SYMBOL, SPY_SYMBOL, get_stock_quote
 from scripts.config.secrets import ANNUAL_NET_SHARES
@@ -22,9 +22,6 @@ from scripts.frontend.common.icons import Icon
 from scripts.home.office.meetings import toggle_meeting_active
 
 card = maestro.entity_card_4
-
-STOCK_LAST_UPDATED_PREFIX = "stock_last_updated"
-STOCK_DISPLAY_LOCK_KEY = "stock_display_lock"
 
 
 @hass_trigger(HassEvent.STARTUP)
@@ -77,10 +74,6 @@ def set_row_1() -> None:
 
 def build_stock_row(symbol: str, detailed: bool = True) -> tuple[str, RowColor] | None:
     """Fetch stock quote and return current display value and color"""
-    redis = card.state_manager.redis_client
-    last_updated_key = redis.build_key(STOCK_LAST_UPDATED_PREFIX, symbol.lower())
-    last_updated_iso = redis.get(last_updated_key)
-
     try:
         quote = get_stock_quote(symbol)
     except Exception as e:
@@ -88,8 +81,7 @@ def build_stock_row(symbol: str, detailed: bool = True) -> tuple[str, RowColor] 
         return "API Error", RowColor.DEFAULT
 
     quote_timestamp = datetime.fromtimestamp(quote.t)
-
-    if last_updated_iso and quote_timestamp <= datetime.fromisoformat(last_updated_iso):
+    if quote_timestamp.date() < local_now().date():
         detailed = False
 
     value = f"${quote.c:.0f}"
@@ -99,12 +91,6 @@ def build_stock_row(symbol: str, detailed: bool = True) -> tuple[str, RowColor] 
         plus_sign = "+" if quote.dp >= 0 else ""
         value += f" ({plus_sign}{quote.dp:.0f}%)"
         color = RowColor.GREEN if quote.dp > 5 else RowColor.RED if quote.dp < -5 else color
-
-    redis.set(
-        key=last_updated_key,
-        value=quote_timestamp.isoformat(),
-        ttl_seconds=IntervalSeconds.ONE_WEEK,
-    )
 
     return value, color
 
@@ -165,9 +151,6 @@ def handle_double_tap() -> None:
     )
 
     sleep(5)
-
-    redis = card.state_manager.redis_client
-    redis.delete(redis.build_key(STOCK_LAST_UPDATED_PREFIX, NET_SYMBOL))
 
     now = local_now()
     show_details = (9 <= now.hour < 5) and (0 <= now.weekday() <= 4)
