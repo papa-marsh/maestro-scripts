@@ -72,7 +72,7 @@ def set_row_1() -> None:
     card.update(row_1_value=value, row_1_icon=icon)
 
 
-def build_stock_row(symbol: str, detailed: bool = True) -> tuple[str, RowColor] | None:
+def build_stock_row(symbol: str) -> tuple[str, RowColor] | None:
     """Fetch stock quote and return current display value and color"""
     try:
         quote = get_stock_quote(symbol)
@@ -80,14 +80,11 @@ def build_stock_row(symbol: str, detailed: bool = True) -> tuple[str, RowColor] 
         log.error("Finnhub API request failed", exception_type=type(e).__name__)
         return "API Error", RowColor.DEFAULT
 
-    quote_timestamp = datetime.fromtimestamp(quote.t)
-    if quote_timestamp.date() < local_now().date():
-        detailed = False
-
     value = f"${quote.c:.0f}"
     color = RowColor.DEFAULT
 
-    if detailed:
+    quote_last_updated = datetime.fromtimestamp(quote.t)
+    if quote_last_updated.date() == local_now().date():
         plus_sign = "+" if quote.dp >= 0 else ""
         value += f" ({plus_sign}{quote.dp:.0f}%)"
         color = RowColor.GREEN if quote.dp > 5 else RowColor.RED if quote.dp < -5 else color
@@ -96,25 +93,21 @@ def build_stock_row(symbol: str, detailed: bool = True) -> tuple[str, RowColor] 
 
 
 @cron_trigger("* 9-16 * * 1-5")
-def set_stock_rows(detailed: bool = True) -> None:
+@cron_trigger(hour=1)
+def set_stock_rows() -> None:
     attr_updates = {}
 
-    if spy_result := build_stock_row(SPY_SYMBOL, detailed=detailed):
+    if spy_result := build_stock_row(SPY_SYMBOL):
         value, color = spy_result
         attr_updates["row_2_value"] = value
         attr_updates["row_2_color"] = color
 
-    if spy_result := build_stock_row(NET_SYMBOL, detailed=detailed):
+    if spy_result := build_stock_row(NET_SYMBOL):
         value, color = spy_result
         attr_updates["row_3_value"] = value
         attr_updates["row_3_color"] = color
 
     card.update(**attr_updates)
-
-
-@cron_trigger(hour=20)
-def reset_stock_rows() -> None:
-    set_stock_rows(detailed=False)
 
 
 @cron_trigger(hour=8, minute=20, day_of_week=[0, 1, 2, 3, 4])
