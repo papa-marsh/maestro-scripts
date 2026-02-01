@@ -142,12 +142,8 @@ def handle_double_tap() -> None:
         row_3_value=f"${annual_vest:,.0f}",
         row_3_color=RowColor.DEFAULT,
     )
-
     sleep(5)
-
-    now = local_now()
-    show_details = (9 <= now.hour < 5) and (0 <= now.weekday() <= 4)
-    set_stock_rows(detailed=show_details)
+    set_stock_rows()
 
 
 @ui_event_trigger(UIEvent.ENTITY_CARD_4_HOLD)
