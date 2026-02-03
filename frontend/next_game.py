@@ -8,7 +8,6 @@ from maestro.triggers import (
     state_change_trigger,
 )
 from maestro.utils import local_now, readable_relative_date
-from scripts.custom_domains.google_calendar import GoogleCalendar
 from scripts.frontend.common.icons import Icon
 
 card = maestro.next_game_card
@@ -36,9 +35,9 @@ def initialize_card() -> None:
 
 
 @cron_trigger(minute=5)  # TODO: make this more useful
-@state_change_trigger(calendar.detroit_lions, calendar.detroit_tigers)
+@state_change_trigger(calendar.detroit_tigers)
 def update_card() -> None:
-    next_game = get_next_game()
+    next_game = calendar.detroit_tigers.next_event
     away_team, home_team = parse_teams(next_game.title)
 
     card.update(
@@ -50,11 +49,7 @@ def update_card() -> None:
     )
 
 
-def get_next_game() -> GoogleCalendar.Event:
-    tigers = calendar.detroit_tigers.next_event
-    lions = calendar.detroit_lions.next_event
-    next_game: GoogleCalendar.Event = lions if lions.start <= tigers.start else tigers
-    return next_game
+# TODO: Set active when game is on
 
 
 def parse_teams(message: str) -> tuple[str, str]:
