@@ -4,6 +4,7 @@ from enum import StrEnum
 class Icon(StrEnum):
     BABY = "mdi:baby"
     BABY_BUGGY = "mdi:baby-buggy"
+    BASEBALL = "mdi:baseball"
     BATTERY_UNKNOWN = "mdi:battery-unknown"
     CALENDAR_TODAY = "mdi:calendar-today"
     CAR_ELECTRIC = "mdi:car-electric"
