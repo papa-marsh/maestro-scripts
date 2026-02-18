@@ -1,4 +1,5 @@
 from calendar import Day
+from contextlib import suppress
 from dataclasses import asdict
 from datetime import timedelta
 
@@ -13,6 +14,7 @@ from maestro.triggers import (
     state_change_trigger,
 )
 from maestro.utils import local_now
+from maestro.utils.exceptions import AttributeDoesNotExistError
 from scripts.common.event_type import UIEvent, ui_event_trigger
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
 from scripts.frontend.common.icons import Icon
@@ -80,9 +82,11 @@ def set_row_2() -> None:
 
     value = climate.thermostat.hvac_action
     current_temp = climate.thermostat.current_temperature
-    setpoint = climate.thermostat.temperature
-    if current_temp != setpoint:
-        value += f" ({setpoint})"
+
+    with suppress(AttributeDoesNotExistError):
+        setpoint = climate.thermostat.temperature
+        if current_temp != setpoint:
+            value += f" ({setpoint})"
 
     icon_map = {"cool": Icon.SNOWFLAKE, "heat": Icon.FIRE, "off": Icon.HVAC_OFF}
     icon = icon_map.get(climate.thermostat.state, Icon.HELP)
