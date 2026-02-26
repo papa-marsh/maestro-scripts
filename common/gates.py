@@ -81,7 +81,7 @@ def gate_check(gate: Gate) -> Callable:
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            if not GateManager.is_closed(gate):
+            if GateManager.is_closed(gate):
                 log.info(
                     "Function execution skipped - gate closed",
                     gate=gate,
