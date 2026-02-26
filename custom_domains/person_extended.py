@@ -1,3 +1,6 @@
+# mypy: disable-error-code="has-type"
+# Not sure why the has-type warnings only show up for this module
+
 from typing import TYPE_CHECKING
 
 from maestro.domains import Person

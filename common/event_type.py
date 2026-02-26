@@ -17,6 +17,8 @@ class EventType(StrEnum):
 
 
 class UIEvent(StrEnum):
+    """Avoid auto() since these are hardcoded in lovelace yaml"""
+
     ENTITY_CARD_1_TAP = "entity_card_1_tap"
     ENTITY_CARD_1_DOUBLE_TAP = "entity_card_1_double_tap"
     ENTITY_CARD_1_HOLD = "entity_card_1_hold"
