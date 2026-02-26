@@ -74,6 +74,8 @@ def gate_check(gate: Gate) -> Callable:
 
     The decorated function will only execute if the gate is open. Gates are
     open by default, and their state is persisted in Redis.
+
+    IMPORTANT: The @gate_check decorator must be *inside* (ordered after) any trigger decorators
     """
 
     def decorator(func: Callable) -> Callable:
@@ -101,6 +103,7 @@ def reset_gate_selector() -> None:
     options = [PLACEHOLDER_OPTION, *list(gates_dict.keys())]
 
     input_select.gate_selector.set_options(options)
+    input_select.gate_selector.select_first()
 
 
 @state_change_trigger(

@@ -5,11 +5,13 @@ from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import state_change_trigger
 from maestro.utils import Notif, local_now
+from scripts.common.gates import Gate, gate_check
 
 from .door_left_open import EXTERIOR_DOORS
 
 
 @state_change_trigger(*EXTERIOR_DOORS, to_state=ON)
+@gate_check(Gate.CRITICAL_DOOR_NOTIFS)
 def send_critical_door_open_notif(state_change: StateChangeEvent) -> None:
     now = local_now()
     nobody_home = not person.marshall.is_home and not person.emily.is_home
