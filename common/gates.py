@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from datetime import datetime, timedelta
-from enum import StrEnum, auto
+from enum import StrEnum
 from functools import wraps
 from typing import Any
 
@@ -22,9 +22,9 @@ GATE_SELECTOR_RESET_JOB_ID = "gate_selector_reset"
 
 
 class Gate(StrEnum):
-    CRITICAL_DOOR_NOTIFS = auto()
-    NOTIF_ON_EMILY_ZONE_CHANGE = auto()
-    NOTIF_ON_MARSHALL_ZONE_CHANGE = auto()
+    CRITICAL_DOOR_NOTIFS = "Critical Door Notifs"
+    NOTIF_ON_EMILY_ZONE_CHANGE = "Notif For Emily Zone Changes"
+    NOTIF_ON_MARSHALL_ZONE_CHANGE = "Notif For Marshall Zone Changes"
 
 
 class GateManager:
@@ -68,25 +68,29 @@ class GateManager:
         return {gate: cls.is_closed(gate) for gate in sorted(Gate)}
 
 
-def gate_check(gate: Gate) -> Callable:
+def gate_check(gate: Gate, func_name: str | None = None) -> bool:
+    """Returns True if the provided gate is open"""
+    if GateManager.is_closed(gate) is None:
+        return True
+
+    log_kwargs: dict[str, str] = {"gate": gate}
+    if func_name is not None:
+        log_kwargs["function"] = func_name
+    log.info("Function execution skipped - gate closed", **log_kwargs)
+
+    return False
+
+
+def require_gate_check(gate: Gate) -> Callable:
     """
-    Decorator to add dynamic enable/disable capability to a function.
-
-    The decorated function will only execute if the gate is open. Gates are
-    open by default, and their state is persisted in Redis.
-
+    Decorator to check a gate before running a function.
     IMPORTANT: The @gate_check decorator must be *inside* (ordered after) any trigger decorators
     """
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            if GateManager.is_closed(gate):
-                log.info(
-                    "Function execution skipped - gate closed",
-                    gate=gate,
-                    function=func.__name__,
-                )
+            if not gate_check(gate, func_name=func.__name__):
                 return None
 
             return func(*args, **kwargs)

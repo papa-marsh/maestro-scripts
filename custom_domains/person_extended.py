@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from maestro.domains import Person
 from maestro.integrations import EntityId
 from maestro.registry import binary_sensor, sensor
+from scripts.common.gates import Gate
 
 if TYPE_CHECKING:
     from scripts.vehicles.common import Nyx, Tess
@@ -19,6 +20,7 @@ class Marshall(Person):
         return Nyx
 
     location = sensor.marshall_s_iphone_geocoded_location
+    location_notif_gate = Gate.NOTIF_ON_MARSHALL_ZONE_CHANGE
 
     phone_battery_level = sensor.marshall_s_iphone_battery_level
     phone_battery_state = sensor.marshall_s_iphone_battery_state
@@ -39,6 +41,7 @@ class Emily(Person):
         return Tess
 
     location = sensor.emily_s_iphone_geocoded_location
+    location_notif_gate = Gate.NOTIF_ON_EMILY_ZONE_CHANGE
 
     phone_battery_level = sensor.emily_s_iphone_battery_level
     phone_battery_state = sensor.emily_s_iphone_battery_state

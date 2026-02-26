@@ -6,6 +6,7 @@ from maestro.integrations import StateChangeEvent
 from maestro.registry import person
 from maestro.triggers import state_change_trigger
 from maestro.utils import JobScheduler, Notif, format_duration, local_now
+from scripts.common.gates import gate_check
 from scripts.custom_domains import Emily, Marshall, ZoneExtended
 from scripts.location_tracking.queries import (
     get_last_left_home,
@@ -84,6 +85,10 @@ def location_update_orchestrator(state_change: StateChangeEvent) -> None:
 
 
 def send_location_update(event: ZoneChangeEvent) -> None:
+    gate = event.person.location_notif_gate
+    if not gate_check(gate, func_name="send_location_update"):
+        return
+
     if not event.new_zone_is_region:
         message = f"{event.name} arrived at {event.new_zone_full}"
 
