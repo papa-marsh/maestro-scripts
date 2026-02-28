@@ -42,7 +42,7 @@ def update_card() -> None:
 
     card.update(
         top_row=next_game.title,
-        middle_row=readable_relative_date(next_game.start),
+        middle_row=readable_relative_date(next_game.start).capitalize(),
         bottom_row=next_game.start.strftime("%-I:%M %p"),
         left_icon_path=f"/local/mlb_logos/{away_team}.png",
         right_icon_path=f"/local/mlb_logos/{home_team}.png",
