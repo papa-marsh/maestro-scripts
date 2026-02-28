@@ -26,6 +26,19 @@ def get_last_event() -> SleepEvent:
     return latest_event
 
 
+def get_last_events(count: int = 1) -> list[SleepEvent]:
+    """Get the most recent sleep events."""
+    events: list[SleepEvent] = (
+        db.session.query(SleepEvent).order_by(SleepEvent.timestamp.desc()).limit(count).all()
+    )
+
+    if not events:
+        midnight_today = local_now().replace(hour=0, minute=0, second=0, microsecond=0)
+        events = [SleepEvent(timestamp=midnight_today, wakeup=False)]
+
+    return events
+
+
 def delete_last_event() -> None:
     """Delete the most recent sleep event."""
     latest_event = db.session.query(SleepEvent).order_by(SleepEvent.timestamp.desc()).first()

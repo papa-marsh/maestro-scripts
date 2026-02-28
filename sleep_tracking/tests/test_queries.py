@@ -27,6 +27,37 @@ def test_save_and_get_last_event(mt: MaestroTest) -> None:
     assert last_event.timestamp == now
 
 
+def test_get_last_events(mt: MaestroTest) -> None:
+    # Returns default midnight asleep event when DB is empty
+    events = queries.get_last_events()
+    assert len(events) == 1
+    assert events[0].wakeup is False
+    assert events[0].timestamp.hour == 0
+    assert events[0].timestamp.minute == 0
+
+    # Returns requested count of most recent events
+    now = local_now()
+    queries.save_sleep_event(timestamp=now, wakeup=True)
+    queries.save_sleep_event(timestamp=now + timedelta(hours=1), wakeup=False)
+    queries.save_sleep_event(timestamp=now + timedelta(hours=2), wakeup=True)
+
+    events = queries.get_last_events(count=2)
+    assert len(events) == 2
+    assert events[0].timestamp == now + timedelta(hours=2)
+    assert events[0].wakeup is True
+    assert events[1].timestamp == now + timedelta(hours=1)
+    assert events[1].wakeup is False
+
+    # Returns all events when count is larger than available
+    events = queries.get_last_events(count=10)
+    assert len(events) == 3
+
+    # Returns single event when count=1 (default)
+    events = queries.get_last_events(count=1)
+    assert len(events) == 1
+    assert events[0].timestamp == now + timedelta(hours=2)
+
+
 def test_delete_last_event(mt: MaestroTest) -> None:
     # Deleting when DB is empty doesn't error
     queries.delete_last_event()

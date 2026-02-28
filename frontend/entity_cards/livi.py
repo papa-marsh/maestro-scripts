@@ -15,7 +15,7 @@ from maestro.utils import format_duration, local_now
 from scripts.common.event_type import EventType
 from scripts.frontend.common.entity_card import EntityCardAttributes
 from scripts.frontend.common.icons import Icon
-from scripts.sleep_tracking.queries import get_awake_time, get_last_event
+from scripts.sleep_tracking.queries import get_awake_time, get_last_events
 
 card = maestro.entity_card_5
 
@@ -36,15 +36,17 @@ def initialize_card() -> None:
     card.update(
         title=attributes.title,
         row_1_icon=Icon.TIMER_OUTLINE,
-        row_2_icon=Icon.CALENDAR_TODAY,
+        row_2_icon=Icon.HISTORY,
+        row_3_icon=Icon.CALENDAR_TODAY,
     )
 
 
 @cron_trigger("* * * * *")
 def update_card() -> None:
-    last_sleep_event = get_last_event()
-    awake: bool = last_sleep_event.wakeup
-    duration: timedelta = local_now() - last_sleep_event.timestamp
+    most_recent_event, previous_event = get_last_events(count=2)
+    awake: bool = most_recent_event.wakeup
+    duration: timedelta = local_now() - most_recent_event.timestamp
+    prev_duration: timedelta = most_recent_event.timestamp - previous_event.timestamp
     awake_time = get_awake_time()
 
     card.update(
@@ -52,7 +54,8 @@ def update_card() -> None:
         icon=Icon.BABY_BUGGY if awake else Icon.SLEEP,
         active=not awake,
         row_1_value=format_duration(duration),
-        row_2_value=format_duration(awake_time),
+        row_2_value=format_duration(prev_duration),
+        row_3_value=format_duration(awake_time),
     )
 
 

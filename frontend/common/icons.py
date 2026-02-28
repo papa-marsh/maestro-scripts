@@ -18,6 +18,7 @@ class Icon(StrEnum):
     FIRE = "mdi:fire"
     HEADSET = "mdi:headset"
     HELP = "mdi:help"
+    HISTORY = "mdi:history"
     HOME = "mdi:home"
     HOME_ASSISTANT = "mdi:home-assistant"
     HVAC = "mdi:hvac"
