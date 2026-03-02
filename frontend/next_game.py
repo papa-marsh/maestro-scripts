@@ -46,6 +46,7 @@ def update_card() -> None:
         bottom_row=next_game.start.strftime("%-I:%M %p"),
         left_icon_path=f"/local/mlb_logos/{away_team}.png",
         right_icon_path=f"/local/mlb_logos/{home_team}.png",
+        active=next_game.start <= local_now(),
     )
 
 
