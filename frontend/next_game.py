@@ -50,9 +50,6 @@ def update_card() -> None:
     )
 
 
-# TODO: Set active when game is on
-
-
 def parse_teams(message: str) -> tuple[str, str]:
     away_team, home_team = message.split(" @ ")
     return away_team, home_team
