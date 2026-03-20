@@ -21,6 +21,10 @@ card = maestro.next_game_card
 STATUS_IN_PROGRESS = "STATUS_IN_PROGRESS"
 STATUS_FINAL = "STATUS_FINAL"
 
+NBSP = "\u00a0"
+ARROW_PAD = NBSP * 2
+TRAIL_PAD = NBSP * 4
+
 
 @hass_trigger(HassEvent.STARTUP)
 @maestro_trigger(MaestroEvent.STARTUP)
@@ -77,8 +81,8 @@ def format_live_game(game: LiveGameData) -> tuple[str, str]:
 
     if game.status == STATUS_IN_PROGRESS:
         if game.inning_half == InningHalf.TOP:
-            return f"◀ {game.inning_half} {game.period}", score
-        return f"{game.inning_half} {game.period} ▶", score
+            return f"◀{ARROW_PAD}{game.inning_half} {game.period}{TRAIL_PAD}", score
+        return f"{TRAIL_PAD}{game.inning_half} {game.period}{ARROW_PAD}▶", score
 
     return "Live", score
 

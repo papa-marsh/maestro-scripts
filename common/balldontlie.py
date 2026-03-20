@@ -49,13 +49,21 @@ def get_live_game(team_id: int, game_date: str) -> LiveGameData | None:
 
     away_innings = game.get("away_team_data", {}).get("inning_scores", [])
     home_innings = game.get("home_team_data", {}).get("inning_scores", [])
+    period: int = game.get("period", 0)
 
-    inning_half = InningHalf.BOTTOM if len(away_innings) > len(home_innings) else InningHalf.TOP
+    if len(away_innings) < period:
+        inning_half = InningHalf.TOP
+    elif len(home_innings) < period:
+        inning_half = InningHalf.BOTTOM
+    else:
+        # Inning complete, heading to top of next
+        inning_half = InningHalf.TOP
+        period += 1
 
     return LiveGameData(
         away_runs=game.get("away_team_data", {}).get("runs", 0),
         home_runs=game.get("home_team_data", {}).get("runs", 0),
         status=game.get("status", ""),
-        period=game.get("period", 0),
+        period=period,
         inning_half=inning_half,
     )
