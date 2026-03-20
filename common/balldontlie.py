@@ -47,22 +47,25 @@ def get_live_game(team_id: int, game_date: str) -> LiveGameData | None:
 
     game = games[0]
 
-    away_innings = game.get("away_team_data", {}).get("inning_scores", [])
-    home_innings = game.get("home_team_data", {}).get("inning_scores", [])
     period: int = game.get("period", 0)
+    scoring_summary: list[dict] = game.get("scoring_summary", [])
 
-    if len(away_innings) < period:
-        inning_half = InningHalf.TOP
-    elif len(home_innings) < period:
-        inning_half = InningHalf.BOTTOM
+    # Scoring summary is the most reliable source for inning half and score
+    if scoring_summary:
+        last_play = scoring_summary[-1]
+        away_runs: int = last_play.get("away_score", 0)
+        home_runs: int = last_play.get("home_score", 0)
+        inning_half = InningHalf.BOTTOM if last_play.get("inning") == "bottom" else InningHalf.TOP
     else:
-        # Inning complete, heading to top of next
-        inning_half = InningHalf.TOP
-        period += 1
+        away_runs = game.get("away_team_data", {}).get("runs", 0)
+        home_runs = game.get("home_team_data", {}).get("runs", 0)
+        away_innings = game.get("away_team_data", {}).get("inning_scores", [])
+        home_innings = game.get("home_team_data", {}).get("inning_scores", [])
+        inning_half = InningHalf.BOTTOM if len(away_innings) > len(home_innings) else InningHalf.TOP
 
     return LiveGameData(
-        away_runs=game.get("away_team_data", {}).get("runs", 0),
-        home_runs=game.get("home_team_data", {}).get("runs", 0),
+        away_runs=away_runs,
+        home_runs=home_runs,
         status=game.get("status", ""),
         period=period,
         inning_half=inning_half,
