@@ -89,4 +89,6 @@ def format_live_game(game: LiveGameData) -> tuple[str, str]:
 
 def parse_teams(message: str) -> tuple[str, str]:
     away_team, home_team = message.split(" @ ")
+    away_team = away_team.split(" (")[0].strip()
+    home_team = home_team.split(" (")[0].strip()
     return away_team, home_team
