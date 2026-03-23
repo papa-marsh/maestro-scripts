@@ -19,8 +19,8 @@ NOTIF_IDENTIFIER = "zone_update"
 JOB_ID_PREFIX = f"{NOTIF_IDENTIFIER}_job_"
 
 GATE_MAP = {
-    person.emily: Gate.NOTIF_ON_EMILY_ZONE_CHANGE,
-    person.marshall: Gate.NOTIF_ON_MARSHALL_ZONE_CHANGE,
+    person.emily.id: Gate.NOTIF_ON_EMILY_ZONE_CHANGE,
+    person.marshall.id: Gate.NOTIF_ON_MARSHALL_ZONE_CHANGE,
 }
 
 
@@ -90,7 +90,7 @@ def location_update_orchestrator(state_change: StateChangeEvent) -> None:
 
 
 def send_location_update(event: ZoneChangeEvent) -> None:
-    if not gate_check(gate=GATE_MAP[event.person], func_name="send_location_update"):
+    if not gate_check(gate=GATE_MAP[event.person.id], func_name="send_location_update"):
         return
 
     if not event.new_zone_is_region:
