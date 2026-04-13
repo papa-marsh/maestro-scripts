@@ -37,73 +37,82 @@ def initialize_card() -> None:
     card.title = attributes.title
 
 
-@state_change_trigger(Nyx.climate, Nyx.parked, Nyx.software_update)
-def set_state() -> None:
+@state_change_trigger(
+    Nyx.climate,
+    Nyx.parked,
+    Nyx.software_update,
+    Nyx.battery,
+    Nyx.location,
+    Nyx.destination,
+    Nyx.lock,
+    Nyx.arrival_time,
+    Nyx.temperature_inside,
+)
+def update_card() -> None:
+    """Recompute all card attributes from current entity state in a single atomic update"""
+    state, attributes = _compute_state()
+    attributes.update(_compute_row_1())
+    attributes.update(_compute_row_2())
+    attributes.update(_compute_row_3())
+    card.update(state=state, **attributes)
+
+
+def _compute_state() -> tuple[str, dict[str, str | bool]]:
     if not Nyx.parked.is_on:
-        state = "Driving"
-        icon = Icon.ROAD_VARIANT
-        active = True
-    elif Nyx.climate.state == Nyx.climate.HVACMode.HEAT_COOL:
-        state = "Air On"
-        icon = Icon.FAN
-        active = True
-    else:
-        state = "Air Off"
-        icon = Icon.UPDATE if Nyx.software_update.is_on else Icon.CAR_ELECTRIC_OUTLINE
-        active = False
+        return "Driving", {"icon": Icon.ROAD_VARIANT, "active": True}
+    if Nyx.climate.state == Nyx.climate.HVACMode.HEAT_COOL:
+        return "Air On", {"icon": Icon.FAN, "active": True}
 
-    card.update(state=state, icon=icon, active=active)
+    icon = Icon.UPDATE if Nyx.software_update.is_on else Icon.CAR_ELECTRIC_OUTLINE
+    return "Air Off", {"icon": icon, "active": False}
 
 
-@state_change_trigger(Nyx.battery)
-def set_row_1() -> None:
+def _compute_row_1() -> dict[str, str]:
     battery = Nyx.battery.state
     if battery in [UNKNOWN, UNAVAILABLE]:
-        card.row_1_icon = Icon.BATTERY_UNKNOWN
-        return
+        return {"row_1_icon": Icon.BATTERY_UNKNOWN}
 
-    value = battery + "%"
     icon = battery_icon(
         battery=float(battery),
         charging=Nyx.charger.is_on,
         full_threshold=int(Nyx.charge_limit.state),
     )
-    card.update(row_1_value=value, row_1_icon=icon)
+    return {"row_1_value": battery + "%", "row_1_icon": icon}
 
 
-@state_change_trigger(Nyx.location, Nyx.destination, Nyx.lock, Nyx.parked)
-def set_row_2() -> None:
+def _compute_row_2() -> dict[str, str]:
     if Nyx.location.is_home:
-        value = "Home"
-        icon = Icon.HOME
-        color = RowColor.DEFAULT
-    elif Nyx.destination.state != UNKNOWN and not Nyx.parked.is_on:
+        return {"row_2_value": "Home", "row_2_icon": Icon.HOME, "row_2_color": RowColor.DEFAULT}
+    if Nyx.destination.state != UNKNOWN and not Nyx.parked.is_on:
         destination_metadata = ZoneExtended.get_zone_metadata(Nyx.destination.state)
-        value = str(destination_metadata.short_name)
-        icon = Icon.NAVIGATION
-        color = RowColor.DEFAULT
-    elif Nyx.lock.state in [UNKNOWN, UNAVAILABLE]:
-        value = "Unknown"
-        icon = Icon.LOCK_QUESTION
-        color = RowColor(card.row_2_color)
-    else:
-        value = Nyx.lock.state
-        icon = Icon.LOCK if Nyx.lock.state == "locked" else Icon.LOCK_OPEN_VARIANT
-        color = RowColor.DEFAULT if Nyx.lock.state == "locked" else RowColor.RED
+        return {
+            "row_2_value": str(destination_metadata.short_name),
+            "row_2_icon": Icon.NAVIGATION,
+            "row_2_color": RowColor.DEFAULT,
+        }
+    if Nyx.lock.state in [UNKNOWN, UNAVAILABLE]:
+        return {
+            "row_2_value": "Unknown",
+            "row_2_icon": Icon.LOCK_QUESTION,
+            "row_2_color": RowColor(card.row_2_color),
+        }
 
-    card.update(row_2_value=value, row_2_icon=icon, row_2_color=color)
+    locked = Nyx.lock.state == "locked"
+    return {
+        "row_2_value": Nyx.lock.state,
+        "row_2_icon": Icon.LOCK if locked else Icon.LOCK_OPEN_VARIANT,
+        "row_2_color": RowColor.DEFAULT if locked else RowColor.RED,
+    }
 
 
-@state_change_trigger(Nyx.parked, Nyx.arrival_time, Nyx.climate, Nyx.temperature_inside)
-def set_row_3() -> None:
+def _compute_row_3() -> dict[str, str]:
     entities: list[Entity] = [Nyx.temperature_inside, Nyx.parked, Nyx.arrival_time, Nyx.climate]
     if any(entity.state in [UNKNOWN, UNAVAILABLE] for entity in entities):
-        card.update(
-            row_3_value="Unavailable",
-            row_3_icon=Icon.THERMOMETER_OFF,
-            row_3_color=RowColor.DEFAULT,
-        )
-        return
+        return {
+            "row_3_value": "Unavailable",
+            "row_3_icon": Icon.THERMOMETER_OFF,
+            "row_3_color": RowColor.DEFAULT,
+        }
 
     if not Nyx.parked.is_on:
         now = local_now()
@@ -111,18 +120,17 @@ def set_row_3() -> None:
         minutes_remaining = int(seconds_remaining // 60)
 
         if minutes_remaining >= 0:
-            value = f"{minutes_remaining} minutes"
-            card.update(row_3_value=value, row_3_icon=Icon.MAP_CLOCK)
-
             JobScheduler().schedule_job(
                 run_time=now + timedelta(seconds=30),
-                func=set_row_3,
+                func=update_card,
                 job_id=ARRIVAL_TIME_RECHECK_JOB_ID,
             )
-            return
+            return {"row_3_value": f"{minutes_remaining} minutes", "row_3_icon": Icon.MAP_CLOCK}
 
     current_temp = int(float(Nyx.temperature_inside.state))
-    value = f"{current_temp}° F"
     color = RowColor.RED if current_temp >= 100 else RowColor.DEFAULT
-
-    card.update(row_3_value=value, row_3_icon=Icon.THERMOMETER, row_3_color=color)
+    return {
+        "row_3_value": f"{current_temp}° F",
+        "row_3_icon": Icon.THERMOMETER,
+        "row_3_color": color,
+    }

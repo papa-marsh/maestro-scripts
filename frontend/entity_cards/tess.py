@@ -37,73 +37,82 @@ def initialize_card() -> None:
     card.title = attributes.title
 
 
-@state_change_trigger(Tess.climate, Tess.parked, Tess.software_update)
-def set_state() -> None:
+@state_change_trigger(
+    Tess.climate,
+    Tess.parked,
+    Tess.software_update,
+    Tess.battery,
+    Tess.location,
+    Tess.destination,
+    Tess.lock,
+    Tess.arrival_time,
+    Tess.temperature_inside,
+)
+def update_card() -> None:
+    """Recompute all card attributes from current entity state in a single atomic update"""
+    state, attributes = _compute_state()
+    attributes.update(_compute_row_1())
+    attributes.update(_compute_row_2())
+    attributes.update(_compute_row_3())
+    card.update(state=state, **attributes)
+
+
+def _compute_state() -> tuple[str, dict[str, str | bool]]:
     if not Tess.parked.is_on:
-        state = "Driving"
-        icon = Icon.ROAD_VARIANT
-        active = True
-    elif Tess.climate.state == Tess.climate.HVACMode.HEAT_COOL:
-        state = "Air On"
-        icon = Icon.FAN
-        active = True
-    else:
-        state = "Air Off"
-        icon = Icon.UPDATE if Tess.software_update.is_on else Icon.CAR_ELECTRIC
-        active = False
+        return "Driving", {"icon": Icon.ROAD_VARIANT, "active": True}
+    if Tess.climate.state == Tess.climate.HVACMode.HEAT_COOL:
+        return "Air On", {"icon": Icon.FAN, "active": True}
 
-    card.update(state=state, icon=icon, active=active)
+    icon = Icon.UPDATE if Tess.software_update.is_on else Icon.CAR_ELECTRIC
+    return "Air Off", {"icon": icon, "active": False}
 
 
-@state_change_trigger(Tess.battery)
-def set_row_1() -> None:
+def _compute_row_1() -> dict[str, str]:
     battery = Tess.battery.state
     if battery in [UNKNOWN, UNAVAILABLE]:
-        card.row_1_icon = Icon.BATTERY_UNKNOWN
-        return
+        return {"row_1_icon": Icon.BATTERY_UNKNOWN}
 
-    value = battery + "%"
     icon = battery_icon(
         battery=float(battery),
         charging=Tess.charger.is_on,
         full_threshold=int(Tess.charge_limit.state),
     )
-    card.update(row_1_value=value, row_1_icon=icon)
+    return {"row_1_value": battery + "%", "row_1_icon": icon}
 
 
-@state_change_trigger(Tess.location, Tess.destination, Tess.lock, Tess.parked)
-def set_row_2() -> None:
+def _compute_row_2() -> dict[str, str]:
     if Tess.location.is_home:
-        value = "Home"
-        icon = Icon.HOME
-        color = RowColor.DEFAULT
-    elif Tess.destination.state != UNKNOWN and not Tess.parked.is_on:
+        return {"row_2_value": "Home", "row_2_icon": Icon.HOME, "row_2_color": RowColor.DEFAULT}
+    if Tess.destination.state != UNKNOWN and not Tess.parked.is_on:
         destination_metadata = ZoneExtended.get_zone_metadata(Tess.destination.state)
-        value = str(destination_metadata.short_name)
-        icon = Icon.NAVIGATION
-        color = RowColor.DEFAULT
-    elif Tess.lock.state in [UNKNOWN, UNAVAILABLE]:
-        value = "Unknown"
-        icon = Icon.LOCK_QUESTION
-        color = RowColor(card.row_2_color)
-    else:
-        value = Tess.lock.state
-        icon = Icon.LOCK if Tess.lock.state == "locked" else Icon.LOCK_OPEN_VARIANT
-        color = RowColor.DEFAULT if Tess.lock.state == "locked" else RowColor.RED
+        return {
+            "row_2_value": str(destination_metadata.short_name),
+            "row_2_icon": Icon.NAVIGATION,
+            "row_2_color": RowColor.DEFAULT,
+        }
+    if Tess.lock.state in [UNKNOWN, UNAVAILABLE]:
+        return {
+            "row_2_value": "Unknown",
+            "row_2_icon": Icon.LOCK_QUESTION,
+            "row_2_color": RowColor(card.row_2_color),
+        }
 
-    card.update(row_2_value=value, row_2_icon=icon, row_2_color=color)
+    locked = Tess.lock.state == "locked"
+    return {
+        "row_2_value": Tess.lock.state,
+        "row_2_icon": Icon.LOCK if locked else Icon.LOCK_OPEN_VARIANT,
+        "row_2_color": RowColor.DEFAULT if locked else RowColor.RED,
+    }
 
 
-@state_change_trigger(Tess.parked, Tess.arrival_time, Tess.climate, Tess.temperature_inside)
-def set_row_3() -> None:
+def _compute_row_3() -> dict[str, str]:
     entities: list[Entity] = [Tess.temperature_inside, Tess.parked, Tess.arrival_time, Tess.climate]
     if any(entity.state in [UNKNOWN, UNAVAILABLE] for entity in entities):
-        card.update(
-            row_3_value="Unavailable",
-            row_3_icon=Icon.THERMOMETER_OFF,
-            row_3_color=RowColor.DEFAULT,
-        )
-        return
+        return {
+            "row_3_value": "Unavailable",
+            "row_3_icon": Icon.THERMOMETER_OFF,
+            "row_3_color": RowColor.DEFAULT,
+        }
 
     if not Tess.parked.is_on:
         now = local_now()
@@ -111,18 +120,17 @@ def set_row_3() -> None:
         minutes_remaining = int(seconds_remaining // 60)
 
         if minutes_remaining >= 0:
-            value = f"{minutes_remaining} minutes"
-            card.update(row_3_value=value, row_3_icon=Icon.MAP_CLOCK)
-
             JobScheduler().schedule_job(
                 run_time=now + timedelta(seconds=30),
-                func=set_row_3,
+                func=update_card,
                 job_id=ARRIVAL_TIME_RECHECK_JOB_ID,
             )
-            return
+            return {"row_3_value": f"{minutes_remaining} minutes", "row_3_icon": Icon.MAP_CLOCK}
 
     current_temp = int(float(Tess.temperature_inside.state))
-    value = f"{current_temp}° F"
     color = RowColor.RED if current_temp >= 100 else RowColor.DEFAULT
-
-    card.update(row_3_value=value, row_3_icon=Icon.THERMOMETER, row_3_color=color)
+    return {
+        "row_3_value": f"{current_temp}° F",
+        "row_3_icon": Icon.THERMOMETER,
+        "row_3_color": color,
+    }
