@@ -3,6 +3,8 @@ from maestro.integrations import Domain
 
 
 class SprinklerZone(Switch):
+    zone: int
+
     def run(self, minutes: int) -> None:
         if minutes < 1 or minutes > 30:
             raise ValueError(f"Run duration must be between 1-30 minutes but got {minutes}")
