@@ -14,10 +14,10 @@ from scripts.home.sprinklers.controller import SprinklerController
 def set_running() -> None:
     for zone in SprinklerController.all_zones:
         if zone.is_on:
-            input_boolean.sprinklers_running.turn_off()
+            input_boolean.sprinklers_running.turn_on()
             return
 
-    input_boolean.sprinklers_running.turn_on()
+    input_boolean.sprinklers_running.turn_off()
 
 
 @ui_event_trigger(UIEvent.SPRINKLERS_RUN_PROGRAM)

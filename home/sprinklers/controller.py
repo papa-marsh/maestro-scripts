@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from maestro.integrations import RedisClient
 from maestro.registry import input_boolean, person, switch
-from maestro.utils import IntervalSeconds, JobScheduler, local_now
+from maestro.utils import IntervalSeconds, JobScheduler, local_now, log
 from scripts.custom_domains.sprinkler_zone import SprinklerZone
 
 
@@ -55,6 +55,7 @@ class SprinklerController:
         return int(run_time_string)
 
     def set_zone_run_time(self, zone: SprinklerZone, minutes: int) -> None:
+        log.info("Caching run time for sprinkler zone", zone=zone.id.entity, minutes=minutes)
         self.redis.set(
             key=self.build_run_time_cache_key(zone),
             value=str(minutes),

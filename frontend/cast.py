@@ -28,7 +28,7 @@ def call_cast_command(display: MediaPlayer) -> None:
             log.info("Attempted to cast and got HomeAssistantClientError", target=display.id)
 
 
-@cron_trigger("*/10 * * * *")
+@cron_trigger(minute=0)
 def cast_to_displays() -> None:
     for display in NEST_DISPLAYS:
         call_cast_command(display)
