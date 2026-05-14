@@ -3,7 +3,7 @@ from maestro.registry import switch
 from maestro.triggers import cron_trigger, state_change_trigger
 
 
-@cron_trigger(hour=18)
+@cron_trigger(hour=19)
 def ellie_bedtime_prep() -> None:
     switch.ellies_sound_machine.turn_on()
 
