@@ -35,17 +35,6 @@ class SprinklerController:
             self.scheduler.cancel_job(job_id)
             zone.turn_off()
 
-    @property
-    def skip_next(self) -> bool:
-        return input_boolean.sprinklers_skip_next.is_on
-
-    @skip_next.setter
-    def skip_next(self, value: bool) -> None:
-        if value:
-            input_boolean.sprinklers_skip_next.turn_on()
-        else:
-            input_boolean.sprinklers_skip_next.turn_off()
-
     def get_zone_run_time(self, zone: SprinklerZone) -> int:
         key = self.build_run_time_cache_key(zone)
         run_time_string = self.redis.get(key)
