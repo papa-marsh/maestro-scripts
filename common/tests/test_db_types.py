@@ -37,10 +37,14 @@ def test_normalize_aware_datetime() -> None:
 
     # local_now() datetime converts to UTC
     local = local_now().replace(hour=12)
+    utc_offset = local.utcoffset()
+    assert utc_offset is not None
+    expected_hour = (12 - int(utc_offset.total_seconds() // 3600)) % 24
+
     result = TZDateTime._normalize_datetime(local)
     assert result is not None
     assert result.tzinfo == UTC
-    assert result.hour == 17
+    assert result.hour == expected_hour
 
 
 def test_normalize_none() -> None:
