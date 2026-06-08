@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 
 from maestro.domains import OFF, ON
 from maestro.integrations import StateChangeEvent
-from maestro.registry import input_boolean
+from maestro.registry import input_boolean, person
 from maestro.triggers import state_change_trigger
-from maestro.utils import local_now
+from maestro.utils import Notif, local_now
 from scripts.common.event_type import UIEvent, ui_event_trigger
 from scripts.custom_domains.sprinkler_zone import SprinklerZone
 from scripts.home.sprinklers.controller import SprinklerController
@@ -41,6 +41,11 @@ def cancel_auto_run_if_skipped() -> None:
 
     SprinklerController().stop_all()
     input_boolean.sprinklers_skip_next.turn_off()
+
+    Notif(
+        title="Sprinklers Skipped",
+        message="The scheduled sprinkler program was skipped",
+    ).send(person.marshall)
 
 
 @state_change_trigger(*SprinklerController.all_zones, from_state=ON, to_state=OFF)
