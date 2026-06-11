@@ -32,11 +32,12 @@ def handle_admin_event() -> None:
 
 
 def fire_admin_event(notif_action: NotifActionEvent) -> None:
-    """Fire the event selected from the admin notification"""
+    """Fire the event selected from the admin notification, on behalf of whoever selected it"""
     event_type = EventType(notif_action.name.removeprefix(FIRE_ACTION_PREFIX))
+    event_data = {"user_id": notif_action.user_id} if notif_action.user_id else {}
 
-    log.info("Firing admin-selected event", event_type=event_type)
-    person.marshall.state_manager.hass_client.fire_event(event_type)
+    log.info("Firing admin-selected event", event_type=event_type, **event_data)
+    person.marshall.state_manager.hass_client.fire_event(event_type, **event_data)
 
 
 # Register fire_admin_event under a unique notif action name per fireable event type

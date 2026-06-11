@@ -38,6 +38,25 @@ def test_fire_admin_event_fires_selected_event(mt: MaestroTest) -> None:
     mt.assert_event_fired(EventType.BATHROOM_FLOOR)
 
 
+def test_fire_admin_event_forwards_user_id(mt: MaestroTest) -> None:
+    """Test that the presser's user_id is forwarded in the fired event data"""
+    mt.trigger_notif_action(
+        f"{admin.FIRE_ACTION_PREFIX}{EventType.OLIVIA_INFO}",
+        user_id="marshall_user_id",
+    )
+
+    mt.assert_event_fired(EventType.OLIVIA_INFO, user_id="marshall_user_id")
+
+
+def test_fire_admin_event_omits_user_id_when_unknown(mt: MaestroTest) -> None:
+    """Test that no user_id key is included when the notif action has no user"""
+    mt.trigger_notif_action(f"{admin.FIRE_ACTION_PREFIX}{EventType.OLIVIA_INFO}")
+
+    events = mt.get_fired_events(EventType.OLIVIA_INFO)
+    assert len(events) == 1
+    assert "user_id" not in events[0].data
+
+
 def test_fire_admin_event_fires_only_selected_event(mt: MaestroTest) -> None:
     """Test that only the selected event is fired, not the others"""
     mt.trigger_notif_action(f"{admin.FIRE_ACTION_PREFIX}{EventType.MEETING_ACTIVE}")

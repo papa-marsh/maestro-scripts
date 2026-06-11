@@ -184,6 +184,10 @@ person.marshall.state_manager.hass_client.fire_event(EventType.BATHROOM_FLOOR, k
 Fires onto the HA event bus and round-trips through the websocket, so matching
 `event_fired_trigger` functions (and any HA automations) will fire.
 
+Include a `user_id` key in the event data to fire on behalf of a specific user: it takes
+precedence over the event's context user (which for REST-fired events is just maestro's
+token owner) when the framework builds `FiredEvent.user_id`.
+
 ### Job Scheduler (Debounce / Delayed Execution)
 
 ```python
