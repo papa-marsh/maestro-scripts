@@ -5,6 +5,7 @@ from maestro.integrations import Domain
 from maestro.registry import binary_sensor, person
 from maestro.testing import MaestroTest
 from maestro.utils import local_now
+from scripts.common.gates import Gate, GateManager
 from scripts.home.door_left_open import EXTERIOR_DOORS
 
 from .. import critical_door_notif
@@ -65,5 +66,27 @@ def test_just_got_home(mt: MaestroTest) -> None:
     mt.set_state(person.emily, HOME, attributes={"last_changed": one_minute_ago})
     mt.trigger_state_change(binary_sensor.front_door_sensor, new=ON)
 
+    mt.assert_action_not_called(Domain.NOTIFY, person.marshall.notify_action_name)
+    mt.assert_action_not_called(Domain.NOTIFY, person.emily.notify_action_name)
+
+
+def test_silence_action_closes_gate_for_an_hour(mt: MaestroTest) -> None:
+    """Pressing the Silence action closes the gate, suppressing notifs for an hour"""
+    mt.set_state(person.marshall, AWAY)
+    mt.set_state(person.emily, AWAY)
+
+    # Notif sends with the silence action attached
+    mt.trigger_state_change(binary_sensor.front_door_sensor, new=ON)
+    mt.assert_action_called(Domain.NOTIFY, person.marshall.notify_action_name)
+    mt.clear_action_calls()
+
+    # Pressing the action closes the gate for an hour
+    mt.trigger_notif_action(critical_door_notif.SILENCE_NOTIF_ACTION_ID)
+    expiry = GateManager.is_closed(Gate.CRITICAL_DOOR_NOTIFS)
+    assert expiry is not None
+    assert abs((expiry - local_now()) - critical_door_notif.SILENCE_DURATION) < timedelta(seconds=5)
+
+    # Subsequent door opens are suppressed
+    mt.trigger_state_change(binary_sensor.front_door_sensor, new=ON)
     mt.assert_action_not_called(Domain.NOTIFY, person.marshall.notify_action_name)
     mt.assert_action_not_called(Domain.NOTIFY, person.emily.notify_action_name)

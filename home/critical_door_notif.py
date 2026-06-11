@@ -3,11 +3,13 @@ from datetime import timedelta
 from maestro.domains import ON, Person
 from maestro.integrations import StateChangeEvent
 from maestro.registry import person
-from maestro.triggers import state_change_trigger
+from maestro.triggers import notif_action_trigger, state_change_trigger
 from maestro.utils import Notif, local_now
-from scripts.common.gates import Gate, require_gate_check
+from scripts.common.gates import Gate, GateManager, require_gate_check
 
 from .door_left_open import EXTERIOR_DOORS
+
+SILENCE_NOTIF_ACTION_ID = "silence_critical_door_notifs"
 
 
 @state_change_trigger(*EXTERIOR_DOORS, to_state=ON)
@@ -28,8 +30,23 @@ def send_critical_door_open_notif(state_change: StateChangeEvent) -> None:
 
         target: list[Person] = [person.marshall, person.emily] if nobody_home else [person.marshall]
 
+        silence_action = Notif.build_action(
+            name=SILENCE_NOTIF_ACTION_ID,
+            title="Silence",
+            destructive=True,
+        )
+
         Notif(
             title="⚠️ Door Opened ⚠️",
             message=f"{friendly_name} opened at {time}",
             priority=Notif.Priority.CRITICAL,
+            actions=[silence_action],
         ).send(*target)
+
+
+@notif_action_trigger(SILENCE_NOTIF_ACTION_ID)
+def silence_critical_door_notifs() -> None:
+    GateManager.close(
+        Gate.CRITICAL_DOOR_NOTIFS,
+        ttl_seconds=int(timedelta(hours=1).total_seconds()),
+    )
