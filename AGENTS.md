@@ -175,6 +175,15 @@ Notif(
 ).send(person.marshall, person.emily)
 ```
 
+### Firing HA Events
+
+```python
+person.marshall.state_manager.hass_client.fire_event(EventType.BATHROOM_FLOOR, key="value")
+```
+
+Fires onto the HA event bus and round-trips through the websocket, so matching
+`event_fired_trigger` functions (and any HA automations) will fire.
+
 ### Job Scheduler (Debounce / Delayed Execution)
 
 ```python
@@ -276,6 +285,8 @@ mt.assert_job_scheduled(JOB_ID, target_function)
 mt.assert_job_not_scheduled(JOB_ID)
 mt.assert_state(maestro.meeting_active, ON)
 mt.assert_entity_exists(maestro.meeting_active)
+mt.assert_event_fired(EventType.BATHROOM_FLOOR)
+mt.assert_event_not_fired(EventType.ADMIN_EVENT)
 ```
 
 Notifications are asserted as action calls on `Domain.NOTIFY` with the person's `notify_action_name`.

@@ -10,6 +10,7 @@ from scripts.common.gates import Gate, GateManager, require_gate_check
 from .door_left_open import EXTERIOR_DOORS
 
 SILENCE_NOTIF_ACTION_ID = "silence_critical_door_notifs"
+SILENCE_DURATION = timedelta(hours=1)
 
 
 @state_change_trigger(*EXTERIOR_DOORS, to_state=ON)
@@ -48,5 +49,5 @@ def send_critical_door_open_notif(state_change: StateChangeEvent) -> None:
 def silence_critical_door_notifs() -> None:
     GateManager.close(
         Gate.CRITICAL_DOOR_NOTIFS,
-        ttl_seconds=int(timedelta(hours=1).total_seconds()),
+        ttl_seconds=int(SILENCE_DURATION.total_seconds()),
     )

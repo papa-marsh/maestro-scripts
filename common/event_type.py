@@ -5,6 +5,8 @@ from maestro.triggers import event_fired_trigger
 
 
 class EventType(StrEnum):
+    ADMIN_EVENT = auto()
+
     BATHROOM_FLOOR = auto()
 
     MEETING_ACTIVE = auto()
