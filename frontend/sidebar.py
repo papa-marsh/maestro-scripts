@@ -1,12 +1,18 @@
 from datetime import date
 
 from maestro.registry import maestro, sun
-from maestro.triggers import HassEvent, MaestroEvent, cron_trigger, hass_trigger, maestro_trigger
+from maestro.triggers import (
+    HassEvent,
+    MaestroEvent,
+    hass_trigger,
+    maestro_trigger,
+    state_change_trigger,
+)
 
 
 @hass_trigger(HassEvent.STARTUP)
 @maestro_trigger(MaestroEvent.STARTUP)
-@cron_trigger(hour=0)
+@state_change_trigger(sun.sun)
 def set_sidebar_text() -> None:
     today = date.today().strftime("%A")
 
