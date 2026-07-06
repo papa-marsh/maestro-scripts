@@ -55,6 +55,7 @@ def schedule_notifications(state_change: StateChangeEvent) -> None:
 
 def send_notifications(door: BinarySensor | Cover, duration: timedelta) -> None:
     friendly_name = door.friendly_name.replace(" Sensor", "")
+    duration_str = format_duration(duration, verbose=True).replace(" 0 minutes", "")
 
     silence_action = Notif.build_action(
         name=SILENCE_NOTIF_ACTION_ID,
@@ -63,7 +64,7 @@ def send_notifications(door: BinarySensor | Cover, duration: timedelta) -> None:
 
     Notif(
         title="Door Left Open",
-        message=f"{friendly_name} has been open for {format_duration(duration)}",
+        message=f"{friendly_name} has been open for {duration_str}",
         group=PROCESS_ID_PREFIX,
         tag=get_process_id(door.id),
         actions=[silence_action],
@@ -79,8 +80,14 @@ def door_closed_cancel_notifs(state_change: StateChangeEvent) -> None:
 
 @notif_action_trigger(SILENCE_NOTIF_ACTION_ID)
 def silence_notif_action_called(notif_action: NotifActionEvent) -> None:
+    if not isinstance(notif_action.action_data, dict):
+        raise TypeError
+
     entity_id = notif_action.action_data["entity_id"]
-    cancel_notifications(entity_id)
+    if not isinstance(entity_id, str):
+        raise TypeError
+
+    cancel_notifications(EntityId(entity_id))
 
 
 def cancel_notifications(entity_id: EntityId) -> None:
