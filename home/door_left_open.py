@@ -13,7 +13,7 @@ EXTERIOR_DOORS: list[BinarySensor] = [
     binary_sensor.front_door_sensor,
     binary_sensor.garage_door_sensor,
     binary_sensor.service_door_sensor,
-    binary_sensor.slider_door_sensor,
+    binary_sensor.slider_door_sensor_door,
 ]
 GARAGE_STALLS: list[Cover] = [cover.east_stall, cover.west_stall]
 
@@ -54,7 +54,8 @@ def schedule_notifications(state_change: StateChangeEvent) -> None:
 
 
 def send_notifications(door: BinarySensor | Cover, duration: timedelta) -> None:
-    friendly_name = door.friendly_name.replace(" Sensor", "")
+    friendly_name = door.friendly_name.replace(" Sensor Door", "").replace(" Sensor", "")
+    # friendly_name = door.friendly_name.replace(" Sensor Door", "") TODO
     duration_str = format_duration(duration, verbose=True).replace(" 0 minutes", "")
 
     silence_action = Notif.build_action(
