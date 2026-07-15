@@ -10,10 +10,10 @@ PROCESS_ID_PREFIX = "door_left_open"
 SILENCE_NOTIF_ACTION_ID = "silence_door_notif"
 
 EXTERIOR_DOORS: list[BinarySensor] = [
-    binary_sensor.front_door_sensor,
-    binary_sensor.garage_door_sensor,
+    binary_sensor.front_door,
+    binary_sensor.garage_door,
     binary_sensor.service_door_sensor,
-    binary_sensor.slider_door_sensor_door,
+    binary_sensor.slider_door,
 ]
 GARAGE_STALLS: list[Cover] = [cover.east_stall, cover.west_stall]
 
@@ -54,10 +54,7 @@ def schedule_notifications(state_change: StateChangeEvent) -> None:
 
 
 def send_notifications(door: BinarySensor | Cover, duration: timedelta) -> None:
-    friendly_name = door.friendly_name.replace(" Sensor Door", "").replace(" Sensor", "")
-    # friendly_name = door.friendly_name.replace(" Sensor Door", "") TODO
     duration_str = format_duration(duration, verbose=True).replace(" 0 minutes", "")
-
     silence_action = Notif.build_action(
         name=SILENCE_NOTIF_ACTION_ID,
         title="Silence",
@@ -65,7 +62,7 @@ def send_notifications(door: BinarySensor | Cover, duration: timedelta) -> None:
 
     Notif(
         title="Door Left Open",
-        message=f"{friendly_name} has been open for {duration_str}",
+        message=f"{door.friendly_name} has been open for {duration_str}",
         group=PROCESS_ID_PREFIX,
         tag=get_process_id(door.id),
         actions=[silence_action],
