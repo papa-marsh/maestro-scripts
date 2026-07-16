@@ -1,12 +1,20 @@
 from maestro.domains import HOME, OFF, ON
 from maestro.integrations import EntityId, StateChangeEvent, StateManager
 from maestro.registry import maestro, person, switch
-from maestro.triggers import HassEvent, event_fired_trigger, hass_trigger, state_change_trigger
+from maestro.triggers import (
+    HassEvent,
+    MaestroEvent,
+    event_fired_trigger,
+    hass_trigger,
+    maestro_trigger,
+    state_change_trigger,
+)
 from maestro.utils import Notif
 from scripts.common.event_type import EventType
 
 
 @hass_trigger(HassEvent.STARTUP)
+@maestro_trigger(MaestroEvent.STARTUP)
 def initialize_meeting_active_entity() -> None:
     """Create the entity only if it doesn't already exist"""
     StateManager().initialize_hass_entity(
