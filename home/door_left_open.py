@@ -12,7 +12,7 @@ SILENCE_NOTIF_ACTION_ID = "silence_door_notif"
 EXTERIOR_DOORS: list[BinarySensor] = [
     binary_sensor.front_door,
     binary_sensor.garage_door,
-    binary_sensor.service_door_sensor,
+    binary_sensor.service_door,
     binary_sensor.slider_door,
 ]
 GARAGE_STALLS: list[Cover] = [cover.east_stall, cover.west_stall]

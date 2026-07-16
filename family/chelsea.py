@@ -6,10 +6,10 @@ from maestro.utils import Notif, local_now
 
 
 @cron_trigger(hour=8)
-@cron_trigger(hour=20)
+@cron_trigger(hour=20, minute=30)
 def feed_chelsea_reminder() -> None:
     now = local_now()
-    if binary_sensor.chelsea_cabinet_sensor.last_changed > now - timedelta(hours=2):
+    if binary_sensor.chelsea_cabinet.last_changed > now - timedelta(hours=2):
         return
 
     Notif(
