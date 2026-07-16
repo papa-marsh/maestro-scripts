@@ -4,6 +4,7 @@ from dataclasses import asdict
 from datetime import timedelta
 
 from maestro.domains import ON
+from maestro.integrations import StateManager
 from maestro.registry import binary_sensor, maestro, sensor, update
 from maestro.triggers import (
     HassEvent,
@@ -30,7 +31,7 @@ def initialize_card() -> None:
         title="Hass",
         icon=Icon.RASPBERRY_PI,
     )
-    card.state_manager.initialize_hass_entity(
+    StateManager().initialize_hass_entity(
         entity_id=card.id,
         state="Loading...",
         attributes=asdict(attributes),

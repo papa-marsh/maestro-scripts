@@ -3,7 +3,7 @@ from datetime import datetime
 from time import sleep
 
 from maestro.domains import ON, UNAVAILABLE, UNKNOWN
-from maestro.integrations import StateChangeEvent
+from maestro.integrations import StateChangeEvent, StateManager
 from maestro.registry import maestro, sensor, switch
 from maestro.triggers import (
     HassEvent,
@@ -31,7 +31,7 @@ def initialize_card() -> None:
         title="Office",
         icon=Icon.CLOUD,
     )
-    card.state_manager.initialize_hass_entity(
+    StateManager().initialize_hass_entity(
         entity_id=card.id,
         state="Loading...",
         attributes=asdict(attributes),

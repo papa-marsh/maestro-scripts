@@ -2,6 +2,7 @@ from dataclasses import asdict
 from datetime import timedelta
 from time import sleep
 
+from maestro.integrations import StateManager
 from maestro.registry import maestro
 from maestro.triggers import (
     HassEvent,
@@ -27,7 +28,7 @@ def initialize_card() -> None:
         title="Livi",
         icon=Icon.BABY,
     )
-    card.state_manager.initialize_hass_entity(
+    StateManager().initialize_hass_entity(
         entity_id=card.id,
         state="Loading...",
         attributes=asdict(attributes),
