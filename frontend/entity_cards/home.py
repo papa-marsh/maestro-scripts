@@ -94,7 +94,7 @@ def set_row_2() -> None:
     card.update(row_2_value=value, row_2_icon=icon)
 
 
-@state_change_trigger(binary_sensor.chelsea_cabinet_sensor, to_state=ON)
+@state_change_trigger(binary_sensor.chelsea_cabinet, to_state=ON)
 def set_row_3() -> None:
     value = local_now().strftime("%-I:%M %p")
     card.update(row_3_value=value, row_3_color=RowColor.DEFAULT)
@@ -108,7 +108,7 @@ def garbage_bin_reminder() -> None:
 @cron_trigger(hour=7)
 @cron_trigger(hour=19)
 def feed_chelsea_reminder() -> None:
-    last_changed = binary_sensor.chelsea_cabinet_sensor.last_changed
+    last_changed = binary_sensor.chelsea_cabinet.last_changed
     if local_now() - last_changed > timedelta(hours=1):
         card.row_3_color = RowColor.RED
 

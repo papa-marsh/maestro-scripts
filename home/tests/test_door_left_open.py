@@ -7,7 +7,7 @@ from maestro.testing import MaestroTest
 
 from .. import door_left_open
 
-test_door = binary_sensor.front_door_sensor
+test_door = binary_sensor.front_door
 
 
 def test_schedule_notifications(mt: MaestroTest) -> None:

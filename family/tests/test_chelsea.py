@@ -13,7 +13,7 @@ def test_feed_chelsea_reminder(mt: MaestroTest) -> None:
     # Notif doesn't send after recent state change
     half_hour_ago = local_now() - timedelta(minutes=30)
     mt.set_state(
-        entity=binary_sensor.chelsea_cabinet_sensor,
+        entity=binary_sensor.chelsea_cabinet,
         state=OFF,
         attributes={"last_changed": half_hour_ago},
     )
@@ -24,7 +24,7 @@ def test_feed_chelsea_reminder(mt: MaestroTest) -> None:
     # Notif sends to both people if no recent state change
     eight_hours_ago = local_now() - timedelta(hours=8)
     mt.set_state(
-        entity=binary_sensor.chelsea_cabinet_sensor,
+        entity=binary_sensor.chelsea_cabinet,
         state=OFF,
         attributes={"last_changed": eight_hours_ago},
     )

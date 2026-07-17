@@ -26,7 +26,7 @@ def test_send_for_every_door_when_away(mt: MaestroTest) -> None:
     for marshall_state, emily_state in [(HOME, HOME), (HOME, AWAY), (AWAY, HOME)]:
         mt.set_state(person.marshall, marshall_state)
         mt.set_state(person.emily, emily_state)
-        mt.trigger_state_change(binary_sensor.front_door_sensor, new=ON)
+        mt.trigger_state_change(binary_sensor.front_door, new=ON)
         mt.assert_action_not_called(Domain.NOTIFY, person.marshall.notify_action_name)
         mt.assert_action_not_called(Domain.NOTIFY, person.emily.notify_action_name)
 
@@ -43,7 +43,7 @@ def test_send_at_night(mt: MaestroTest) -> None:
     for hour, minute, should_send in test_times:
         test_time = local_now().replace(hour=hour, minute=minute, second=0, microsecond=0)
         with mt.mock_datetime_as(test_time):
-            mt.trigger_state_change(binary_sensor.front_door_sensor, new=ON)
+            mt.trigger_state_change(binary_sensor.front_door, new=ON)
             if should_send:
                 mt.assert_action_called(Domain.NOTIFY, person.marshall.notify_action_name)
             else:
@@ -60,11 +60,11 @@ def test_just_got_home(mt: MaestroTest) -> None:
     # Don't send if someone just got home
     mt.set_state(person.marshall, HOME, attributes={"last_changed": one_minute_ago})
     mt.set_state(person.emily, HOME, attributes={"last_changed": one_week_ago})
-    mt.trigger_state_change(binary_sensor.front_door_sensor, new=ON)
+    mt.trigger_state_change(binary_sensor.front_door, new=ON)
 
     mt.set_state(person.marshall, HOME, attributes={"last_changed": one_week_ago})
     mt.set_state(person.emily, HOME, attributes={"last_changed": one_minute_ago})
-    mt.trigger_state_change(binary_sensor.front_door_sensor, new=ON)
+    mt.trigger_state_change(binary_sensor.front_door, new=ON)
 
     mt.assert_action_not_called(Domain.NOTIFY, person.marshall.notify_action_name)
     mt.assert_action_not_called(Domain.NOTIFY, person.emily.notify_action_name)
@@ -76,7 +76,7 @@ def test_silence_action_closes_gate_for_an_hour(mt: MaestroTest) -> None:
     mt.set_state(person.emily, AWAY)
 
     # Notif sends with the silence action attached
-    mt.trigger_state_change(binary_sensor.front_door_sensor, new=ON)
+    mt.trigger_state_change(binary_sensor.front_door, new=ON)
     mt.assert_action_called(Domain.NOTIFY, person.marshall.notify_action_name)
     mt.clear_action_calls()
 
@@ -87,6 +87,6 @@ def test_silence_action_closes_gate_for_an_hour(mt: MaestroTest) -> None:
     assert abs((expiry - local_now()) - critical_door_notif.SILENCE_DURATION) < timedelta(seconds=5)
 
     # Subsequent door opens are suppressed
-    mt.trigger_state_change(binary_sensor.front_door_sensor, new=ON)
+    mt.trigger_state_change(binary_sensor.front_door, new=ON)
     mt.assert_action_not_called(Domain.NOTIFY, person.marshall.notify_action_name)
     mt.assert_action_not_called(Domain.NOTIFY, person.emily.notify_action_name)
