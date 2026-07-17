@@ -1,4 +1,4 @@
-# Project name matches the original deployment so existing volumes carry over
+# Pinned so volumes and network names stay stable regardless of directory name
 name: maestro
 
 services:

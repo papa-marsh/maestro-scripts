@@ -450,7 +450,7 @@ wheels = [
 ]
 
 [[package]]
-name = "maestro-scripts"
+name = "maestro"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

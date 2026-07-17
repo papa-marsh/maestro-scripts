@@ -44,3 +44,6 @@ scripts/config/zones.py
 # Generated entity registry (contains home entity inventory)
 registry/*
 !registry/__init__.py
+
+# Editor
+.vscode/

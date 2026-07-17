@@ -1,4 +1,4 @@
-# Maestro Scripts
+# Maestro
 
 Personal Home Assistant automations built on the [Maestro framework](https://github.com/papa-marsh/hass-maestro) (`hass-maestro` on PyPI, imported as `maestro`). This is a standalone application: `app.py` constructs the `MaestroApp`, and the project runs in Docker on the mac mini alongside Redis and Postgres.
 
