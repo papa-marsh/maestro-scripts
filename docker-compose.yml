@@ -1,3 +1,6 @@
+# Project name matches the original deployment so existing volumes carry over
+name: maestro
+
 services:
   maestro:
     container_name: maestro
