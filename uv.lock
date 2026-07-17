@@ -345,7 +345,7 @@ wheels = [
 [[package]]
 name = "hass-maestro"
 version = "0.1.0"
-source = { git = "https://github.com/papa-marsh/hass-maestro?branch=main#a088b20ce228255e4cb67060147abf9cc534f680" }
+source = { git = "https://github.com/papa-marsh/hass-maestro?branch=main#d55fdd14a6c56d4ea9f7bc86b95d2df390f26333" }
 dependencies = [
     { name = "aiohttp" },
     { name = "apscheduler" },

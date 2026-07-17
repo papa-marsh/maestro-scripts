@@ -29,6 +29,9 @@ dev = [
 cache-dir = ".cache/ruff"
 target-version = "py314"
 line-length = 100
+# Generated registry modules are format-sensitive: maestro's registry manager parses
+# them line-by-line, so they must never be linted or reformatted
+extend-exclude = ["registry"]
 
 [tool.ruff.lint]
 select = [
@@ -57,11 +60,6 @@ ignore = [
 "app.py" = [
     "F401", # Allow unused imports for Flask shell context
     "T20",  # Shell context preload announcement
-]
-"registry/**.py" = [
-    "E501", # Line length
-    "F401", # Unused imports
-    "I001", # Unsorted imports
 ]
 "**/tests/**.py" = [
     "ARG001", # Unused Arg
