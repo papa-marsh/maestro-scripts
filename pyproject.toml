@@ -1,0 +1,90 @@
+[project]
+name = "maestro-scripts"
+version = "0.1.0"
+description = "Personal Home Assistant automations built on the Maestro framework"
+requires-python = ">=3.14"
+dependencies = [
+    "hass-maestro[postgres,test]",
+    "catt>=0.13.1",
+    "gunicorn>=21,<23",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+hass-maestro = { git = "https://github.com/papa-marsh/hass-maestro", branch = "main" }
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17,<2",
+    "pytest>=8,<9",
+    "ruff>=0.12,<1",
+    "types-flask-sqlalchemy>=2.5",
+    "types-requests>=2.32",
+    "types-sqlalchemy>=1.4",
+]
+
+[tool.ruff]
+cache-dir = ".cache/ruff"
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "F",    # Pyflakes - basic Python errors
+    "E",    # pycodestyle errors - PEP 8 violations
+    "W",    # pycodestyle warnings - PEP 8 style issues
+    "I",    # isort - import sorting
+    "PGH",  # pygrep-hooks - miscellaneous linting rules
+    "UP",   # pyupgrade - modernize Python code
+    "S",    # flake8-bandit - security issues
+    "C4",   # flake8-comprehensions - list/dict comprehension improvements
+    "DJ",   # flake8-django - Django-specific rules
+    "INP",  # flake8-no-pep420 - require __init__.py files
+    "T20",  # flake8-print - detect print statements
+    "SIM",  # flake8-simplify - code simplification suggestions
+    "ARG",  # flake8-unused-arguments - unused function arguments
+    "PTH",  # flake8-use-pathlib - prefer pathlib over os.path
+    "FURB", # refurb - modernization and performance improvements
+    "RUF",  # Ruff-specific rules
+]
+ignore = [
+    "E741", # Ambiguous variable name
+]
+
+[tool.ruff.lint.per-file-ignores]
+"app.py" = [
+    "F401", # Allow unused imports for Flask shell context
+    "T20",  # Shell context preload announcement
+]
+"registry/**.py" = [
+    "E501", # Line length
+    "F401", # Unused imports
+    "I001", # Unsorted imports
+]
+"**/tests/**.py" = [
+    "ARG001", # Unused Arg
+    "E501",   # Line length
+    "F401",   # Unused imports
+    "S101",   # Assert statements
+]
+
+[tool.mypy]
+python_version = "3.14"
+cache_dir = ".cache/mypy"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unreachable = true
+warn_no_return = true
+allow_redefinition = true
+pretty = true
+show_error_codes = true
+
+[tool.pytest.ini_options]
+testpaths = ["scripts"]

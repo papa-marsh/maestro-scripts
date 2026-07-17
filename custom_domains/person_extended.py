@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 
 from maestro.domains import Person
 from maestro.integrations import EntityId
-from maestro.registry import binary_sensor, sensor
+
+from registry import binary_sensor, sensor
 
 if TYPE_CHECKING:
     from scripts.vehicles.common import Nyx, Tess
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
 
 class Marshall(Person):
     @property
-    def vehicle(self) -> "type[Nyx]":
+    def vehicle(self) -> type[Nyx]:
         from scripts.vehicles.common import Nyx
 
         return Nyx
@@ -33,7 +34,7 @@ class Marshall(Person):
 
 class Emily(Person):
     @property
-    def vehicle(self) -> "type[Tess]":
+    def vehicle(self) -> type[Tess]:
         from scripts.vehicles.common import Tess
 
         return Tess

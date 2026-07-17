@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from maestro.config import TIMEZONE
+from maestro.config import get_config
 from maestro.domains import Calendar
 from maestro.integrations import EntityId
 
@@ -57,9 +57,9 @@ class GoogleCalendar(Calendar):
                 end = datetime.fromisoformat(end_string)
 
                 if start.tzinfo is None:
-                    start = start.replace(tzinfo=TIMEZONE)
+                    start = start.replace(tzinfo=get_config().timezone)
                 if end.tzinfo is None:
-                    end = end.replace(tzinfo=TIMEZONE)
+                    end = end.replace(tzinfo=get_config().timezone)
 
                 events.append(
                     self.Event(

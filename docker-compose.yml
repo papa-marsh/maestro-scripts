@@ -1,0 +1,43 @@
+services:
+  maestro:
+    container_name: maestro
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    networks:
+      - maestro-network
+    volumes:
+      - ./registry:/code/registry
+
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    networks:
+      - maestro-network
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  postgres:
+    container_name: postgres
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: maestro
+      POSTGRES_USER: maestro
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - maestro-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  redis_data:
+  postgres_data:
+
+networks:
+  maestro-network:
+    name: maestro-network
+    driver: bridge

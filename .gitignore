@@ -33,5 +33,14 @@ MANIFEST
 ehthumbs.db
 Thumbs.db
 
-config/secrets.py
-config/zones.py
+scripts/config/secrets.py
+scripts/config/zones.py
+
+# Environment
+.env
+.venv/
+.cache/
+
+# Generated entity registry (contains home entity inventory)
+registry/*
+!registry/__init__.py

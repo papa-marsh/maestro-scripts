@@ -1,79 +1,72 @@
 # Maestro Scripts
 
-Personal Home Assistant automations built on the Maestro framework. This repo lives inside the maestro project at `scripts/` and is loaded at runtime by the framework.
+Personal Home Assistant automations built on the [Maestro framework](https://github.com/papa-marsh/hass-maestro) (`hass-maestro` on PyPI, imported as `maestro`). This is a standalone application: `app.py` constructs the `MaestroApp`, and the project runs in Docker on the mac mini alongside Redis and Postgres.
 
-## Framework
-
-This project depends on the Maestro framework, which lives in the parent directory (`../`). Maestro's architecture, code style, type system, and testing infrastructure are documented in `../AGENTS.md` -- read it for full context on how the framework works. Everything in that file (code style, naming conventions, type annotations, error handling, logging, etc.) applies here too.
-
-## Build / Lint / Test Commands
-
-All commands are run from the **parent maestro directory** (`../`), not from `scripts/`.
-
-```bash
-# Run all script tests
-pytest scripts
-
-# Run tests for a specific domain
-pytest scripts/home/tests
-
-# Run a single test file
-pytest scripts/home/tests/test_thermostat.py
-
-# Run a single test function
-pytest scripts/home/tests/test_thermostat.py::test_check_thermostat_hold
-
-# Run tests matching a keyword
-pytest scripts -k "test_charging"
-
-# Lint and type check (covers scripts too when run from parent)
-ruff check scripts
-ruff format scripts
-mypy scripts
-```
+Maestro's architecture, code style, type system, and testing infrastructure are documented in the library's AGENTS.md (`../hass-maestro/AGENTS.md` when developing locally). Everything there (code style, naming conventions, type annotations, error handling, logging) applies here too.
 
 ## Project Structure
 
-Automations are organized into thematic directories (e.g., `home/`, `vehicles/`, `family/`). Three special directories exist at the top level:
-
-- **`common/`** -- Shared utilities used across domains (gate system, event types, finance API, DB column types)
-- **`config/`** -- Secrets and zone metadata (**gitignored** -- contains personal data)
-- **`custom_domains/`** -- Domain subclasses injected into `maestro.domains` (see maestro's AGENTS.md for how this works)
-
-New automation domains should follow this layout:
 ```
-domain/
-  __init__.py              # Empty
-  models.py                # SQLAlchemy models (if domain persists data)
-  queries.py               # DB or Redis query functions (if needed)
-  <automation>.py          # Trigger-decorated automation functions
-  tests/
-    __init__.py            # Empty
-    test_<automation>.py   # Tests mirroring each automation module
+app.py                # Entrypoint: constructs MaestroApp from env vars; gunicorn serves "app:app"
+scripts/              # Automation modules, auto-imported at startup as the `scripts` package
+  common/             # Shared utilities used across domains (gates, event types, finance API, DB types)
+  config/             # Secrets and zone metadata (gitignored -- contains personal data)
+  <domain>/           # Thematic automation dirs (home/, vehicles/, family/, frontend/, ...)
+custom_domains/       # Entity subclass extensions; imported by maestro at startup
+registry/             # Generated entity registry (committed); imported as `from registry import ...`
+Dockerfile / docker-compose.yml / justfile   # Deployment (maestro + redis + postgres)
 ```
+
+The three project packages (`scripts`, `registry`, `custom_domains`) are top-level packages rooted at the repo root, which `MaestroApp` puts on `sys.path`. Script modules import as `scripts.home.thermostat`.
+
+## Build / Lint / Test Commands
+
+All commands run from the repo root.
+
+```bash
+uv sync                    # Install dependencies (hass-maestro resolves from GitHub via [tool.uv.sources])
+
+uv run pytest              # Run all tests
+uv run pytest scripts/home/tests/test_thermostat.py::test_check_thermostat_hold
+uv run pytest -k "test_charging"
+
+uv run ruff check .        # Lint
+uv run ruff format .       # Format
+uv run mypy .              # Type check (strict)
+
+# Deployment (on the mac mini)
+just deploy                # Rebuild and restart all services
+just pull-deploy           # Pull main, then deploy
+just upgrade-maestro       # Re-lock the hass-maestro dependency, then deploy
+just logs                  # Tail maestro container logs
+just shell                 # Flask shell (background services disabled) with pre-loaded imports
+just prune                 # Remove registry entities no longer in Home Assistant
+```
+
+The `mt` test fixture auto-registers via hass-maestro's pytest plugin -- no conftest wiring. Tests need no Redis, HA, or Postgres.
 
 ## Imports
 
 ### From Maestro (always via top-level package re-exports)
 
 ```python
+from maestro import db
 from maestro.domains import ON, OFF, HOME, AWAY, UNAVAILABLE, UNKNOWN
 from maestro.integrations import StateChangeEvent, FiredEvent, Domain, EntityId
-from maestro.registry import person, switch, sensor, climate, binary_sensor, cover
 from maestro.triggers import state_change_trigger, cron_trigger, event_fired_trigger
 from maestro.utils import Notif, JobScheduler, local_now, format_duration, log
 from maestro.testing import MaestroTest
 ```
 
-Never import from deep submodules like `maestro.domains.entity` or `maestro.triggers.trigger_manager`. The one exception is custom domain files that must import from `maestro.domains.<module>` directly (e.g., `from maestro.domains.climate import Climate`) to avoid circular imports, since `maestro.domains.__init__` wildcard-imports from `scripts.custom_domains`.
+Never import from deep submodules like `maestro.domains.entity` or `maestro.triggers.trigger_manager`. The one exception is custom domain files, which must import from the specific domain module (e.g. `from maestro.domains.climate import Climate`) to avoid circular imports.
 
-### From Scripts (cross-package)
+### From project packages
 
 ```python
-from scripts.common.event_type import EventType, UIEvent, ui_event_trigger
+from registry import person, switch, sensor, climate, binary_sensor, cover
+from custom_domains import Thermostat, SonosSpeaker
 from scripts.common.gates import GateManager, gate_check, Gate
 from scripts.config.secrets import USER_ID_TO_PERSON, PERSON_TO_USER_ID
-from scripts.custom_domains.climate import Thermostat
 ```
 
 Within a domain, use relative imports for sibling modules:
@@ -85,7 +78,7 @@ from .door_left_open import EXTERIOR_DOORS
 
 ## Custom Domains (`custom_domains/`)
 
-Custom domain subclasses extend maestro's base domain classes with device-specific functionality. They are wildcard-imported into `maestro.domains` at framework startup, which allows the auto-generated registry to use them as parent classes.
+Custom domain subclasses extend maestro's base domain classes with device-specific functionality. Maestro imports this package at startup (configured via `custom_domains_dir`), before registry modules and scripts load. Registry-generated entity classes can inherit from these instead of base domain classes; the registry generator preserves custom parents and imports them from this package.
 
 The pattern:
 ```python
@@ -107,6 +100,10 @@ class Thermostat(Climate):
 - Export via `__all__` in `custom_domains/__init__.py` using `ClassName.__name__`
 
 Current custom domains: `Thermostat`, `BathroomFloor`, `TeslaHVAC`, `SonosSpeaker`, `SprinklerZone`, `ZoneExtended`, `GoogleCalendar`, `Marshall`, `Emily`
+
+## Registry (`registry/`)
+
+Generated by maestro's `RegistryManager` (with `autopopulate_registry=True` in production, entries refresh automatically as state changes arrive). The generated modules are **gitignored** -- they enumerate the home's entities, which stays out of the public repo -- but must exist on disk for scripts, tests, and Docker builds. Don't hand-edit entity entries except to change a class's parent to a custom domain subclass -- the generator preserves that. `just prune` removes entities that no longer exist in HA.
 
 ## Automation Patterns
 
@@ -210,6 +207,8 @@ Job IDs are module-level `SCREAMING_SNAKE_CASE` constants. `JobScheduler()` is i
 ### Database Models
 
 ```python
+from maestro import db
+
 class ZoneChange(db.Model):  # type:ignore[name-defined]
     __tablename__ = "zone_change"
     __table_args__: ClassVar = {"extend_existing": True}
@@ -233,7 +232,7 @@ redis.set(key=key, value=value.isoformat(), ttl_seconds=IntervalSeconds.TWO_WEEK
 result = redis.get(key=key)
 ```
 
-Key prefixes are module-level constants. TTLs use `IntervalSeconds` enum values. Timestamps serialize as ISO strings.
+Key prefixes are module-level constants (maestro namespaces all keys under its configured `redis_key_prefix` automatically). TTLs use `IntervalSeconds` enum values. Timestamps serialize as ISO strings.
 
 ## Testing
 
@@ -241,7 +240,7 @@ Key prefixes are module-level constants. TTLs use `IntervalSeconds` enum values.
 
 - Test files mirror automation modules: `test_thermostat.py` tests `thermostat.py`
 - All test functions are module-level (no test classes)
-- Every test takes `mt: MaestroTest` as its first parameter (except pure logic tests)
+- Every test takes `mt: MaestroTest` as its first parameter (required for any test touching state, triggers, or the DB)
 - Return type always `-> None`
 - Import the script module via relative import to register its triggers:
   ```python
@@ -293,7 +292,7 @@ mt.assert_event_fired(EventType.BATHROOM_FLOOR)
 mt.assert_event_not_fired(EventType.ADMIN_EVENT)
 ```
 
-Notifications are asserted as action calls on `Domain.NOTIFY` with the person's `notify_action_name`.
+Notifications are asserted as action calls on `Domain.NOTIFY` with the person's `notify_action_name`. Entity arguments to assertions are passed as `.id` strings, not Entity objects.
 
 ### Calling Non-Triggered Functions
 
@@ -304,6 +303,8 @@ bathroom_floor.reset_floor_to_auto()
 mt.assert_action_called(Domain.CLIMATE, "set_preset_mode")
 ```
 
+Cron- and sun-triggered functions can also be called directly -- in test mode the trigger wrapper executes the function without requiring a running app.
+
 ### Time Mocking
 
 ```python
@@ -312,9 +313,13 @@ with mt.mock_datetime_as(local_now().replace(hour=3, minute=0)):
     mt.assert_action_called(...)
 ```
 
-## Config (`config/`)
+## Config (`scripts/config/`)
 
 - `secrets.py` -- User ID mappings (`USER_ID_TO_PERSON`, `PERSON_TO_USER_ID`), API tokens, financial constants. **Gitignored.**
 - `zones.py` -- `ZoneMetadata` dataclass and `zone_metadata_registry` dict mapping zone names to rich metadata (short names, debounce durations, region flags, geographic groupings). **Gitignored.**
 
 Both are gitignored because they contain personal data. If you need to modify them, note that changes won't appear in git status.
+
+## Deployment
+
+Runs on the mac mini via Docker Compose (maestro + redis + postgres). Runtime configuration comes from `.env` (see `.env.example`); `app.py` owns all env parsing. The `hass-maestro` dependency resolves from GitHub via `[tool.uv.sources]`, pinned to a commit in `uv.lock`; run `just upgrade-maestro` to pick up new library commits. The generated `registry/` modules are gitignored (they describe the home's entity inventory) -- when setting up a fresh checkout, copy them from an existing deployment or let maestro regenerate them against live HA. `MAESTRO_BACKGROUND_SERVICES=false` disables the websocket and scheduler (used by `just shell` and `just prune`).

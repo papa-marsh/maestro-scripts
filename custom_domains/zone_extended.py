@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from maestro.domains import Zone
 from maestro.integrations import EntityId, StateManager
+
 from scripts.config.zones import ZoneMetadata, zone_metadata_registry
 
 
@@ -34,7 +35,7 @@ class ZoneExtended(Zone):
 
     @classmethod
     def resolve_zone(cls, friendly_name: str) -> Zone:
-        from maestro.registry import zone as zone_registry
+        from registry import zone as zone_registry
 
         for attr_name in dir(zone_registry):
             attr = getattr(zone_registry, attr_name)
