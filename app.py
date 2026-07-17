@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from maestro import MaestroApp
 
@@ -17,6 +18,7 @@ app = MaestroApp(
     redis_host=os.environ["REDIS_HOST"],
     redis_port=int(os.environ["REDIS_PORT"]),
     db_url=os.environ.get("DATABASE_URL"),
+    custom_domains_dir=Path("custom_domains"),
     timezone=os.environ.get("TIMEZONE", "America/New_York"),
     background_services=os.environ.get("MAESTRO_BACKGROUND_SERVICES", "true").lower() != "false",
     autopopulate_registry=os.environ.get("AUTOPOPULATE_REGISTRY", "").lower() in ("true", "1"),
