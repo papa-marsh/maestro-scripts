@@ -58,7 +58,7 @@ from maestro.utils import Notif, JobScheduler, local_now, format_duration, log
 from maestro.testing import MaestroTest
 ```
 
-Never import from deep submodules like `maestro.domains.entity` or `maestro.triggers.trigger_manager`. The one exception is custom domain files, which must import from the specific domain module (e.g. `from maestro.domains.climate import Climate`) to avoid circular imports.
+Never import from submodules -- everything consumable is re-exported from a top-level package (internal modules carry an `_` prefix). This includes `from maestro import get_config`, `from maestro.registry import RegistryManager`, and `from maestro.exceptions import <XxxError>`.
 
 ### From project packages
 
@@ -82,7 +82,7 @@ Custom domain subclasses extend maestro's base domain classes with device-specif
 
 The pattern:
 ```python
-from maestro.domains.climate import Climate  # Direct module import (not package)
+from maestro.domains import Climate
 
 class Thermostat(Climate):
     class HVACMode(StrEnum):
