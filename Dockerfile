@@ -10,7 +10,7 @@ WORKDIR /code
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
-COPY app.py conftest.py ./
+COPY app.py ./
 COPY scripts/ ./scripts
 COPY custom_domains/ ./custom_domains
 COPY registry/ ./registry
