@@ -41,7 +41,6 @@ select = [
     "UP",   # pyupgrade - modernize Python code
     "S",    # flake8-bandit - security issues
     "C4",   # flake8-comprehensions - list/dict comprehension improvements
-    "DJ",   # flake8-django - Django-specific rules
     "INP",  # flake8-no-pep420 - require __init__.py files
     "T20",  # flake8-print - detect print statements
     "SIM",  # flake8-simplify - code simplification suggestions
