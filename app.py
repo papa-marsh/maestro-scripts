@@ -33,19 +33,18 @@ app = MaestroApp(
 @app.shell_context_processor
 def make_shell_context() -> dict:
     """Pre-load common imports for the flask shell command"""
-    from maestro.integrations.home_assistant.client import HomeAssistantClient
-    from maestro.integrations.home_assistant.types import (
+    from maestro.integrations import (
         AttributeId,
         EntityData,
         EntityId,
+        HomeAssistantClient,
+        RedisClient,
         StateChangeEvent,
         StateId,
+        StateManager,
     )
-    from maestro.integrations.redis import RedisClient
-    from maestro.integrations.state_manager import StateManager
-    from maestro.registry.registry_manager import RegistryManager
-    from maestro.triggers.sun import SolarEvent
-    from maestro.triggers.trigger_manager import TriggerManager
+    from maestro.registry import RegistryManager
+    from maestro.triggers import SolarEvent
     from maestro.utils import (
         IntervalSeconds,
         JobScheduler,
@@ -58,8 +57,7 @@ def make_shell_context() -> dict:
     redis = RedisClient()
     sm = StateManager(hass_client=hass, redis_client=redis)
     rm = RegistryManager()
-    triggers = TriggerManager.get_registry()
 
-    print("Pre-loaded variables: hass, redis, sm, rm, triggers")
+    print("Pre-loaded variables: hass, redis, sm, rm")
 
     return locals()

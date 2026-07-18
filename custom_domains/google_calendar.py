@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from maestro.config import get_config
+from maestro import get_config
 from maestro.domains import Calendar
 from maestro.integrations import EntityId
 

@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
 
-from maestro import db
-from maestro.config import get_config
+from maestro import db, get_config
 from maestro.integrations import StateChangeEvent
 from maestro.triggers import state_change_trigger
 

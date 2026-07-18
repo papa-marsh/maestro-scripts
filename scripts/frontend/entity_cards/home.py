@@ -4,6 +4,7 @@ from dataclasses import asdict
 from datetime import timedelta
 
 from maestro.domains import ON, UNAVAILABLE, UNKNOWN
+from maestro.exceptions import AttributeDoesNotExistError
 from maestro.integrations import StateManager
 from maestro.triggers import (
     HassEvent,
@@ -14,7 +15,6 @@ from maestro.triggers import (
     state_change_trigger,
 )
 from maestro.utils import local_now
-from maestro.utils.exceptions import AttributeDoesNotExistError
 
 from registry import binary_sensor, climate, maestro
 from scripts.common.event_type import UIEvent, ui_event_trigger

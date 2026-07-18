@@ -1,4 +1,4 @@
-from maestro.registry.registry_manager import RegistryManager
+from maestro.registry import RegistryManager
 from maestro.triggers import cron_trigger
 
 

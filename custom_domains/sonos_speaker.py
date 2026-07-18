@@ -1,4 +1,4 @@
-from maestro.domains.media_player import MediaPlayer
+from maestro.domains import MediaPlayer
 from maestro.integrations import Domain
 
 

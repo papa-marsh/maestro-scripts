@@ -51,4 +51,4 @@ bash: build
 
 # Prune registry entities that no longer exist in Home Assistant
 prune: build
-    docker compose run --rm -e MAESTRO_BACKGROUND_SERVICES=false maestro uv run --no-dev python -c "import app; from maestro.registry.registry_manager import RegistryManager; RegistryManager.prune()"
+    docker compose run --rm -e MAESTRO_BACKGROUND_SERVICES=false maestro uv run --no-dev python -c "import app; from maestro.registry import RegistryManager; RegistryManager.prune()"

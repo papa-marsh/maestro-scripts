@@ -1,7 +1,7 @@
 from enum import StrEnum, auto
 from typing import override
 
-from maestro.domains.climate import Climate
+from maestro.domains import Climate
 
 
 class Thermostat(Climate):
