@@ -22,9 +22,7 @@ app = MaestroApp(
     timezone=os.environ.get("TIMEZONE", "America/New_York"),
     background_services=os.environ.get("MAESTRO_BACKGROUND_SERVICES", "true").lower() != "false",
     autopopulate_registry=os.environ.get("AUTOPOPULATE_REGISTRY", "").lower() in ("true", "1"),
-    domain_ignore_list=tuple(
-        domain for domain in os.environ.get("DOMAIN_IGNORE_LIST", "").split(",") if domain
-    ),
+    domain_ignore_list=tuple(d for d in os.environ.get("DOMAIN_IGNORE_LIST", "").split(",") if d),
     notify_action_mappings=_notify_action_mappings(),
     default_notif_sound=os.environ.get("DEFAULT_NOTIF_SOUND", "3rdParty_Failure_Haptic.caf"),
     critical_notif_sound=os.environ.get("CRITICAL_NOTIF_SOUND", "3rd_party_critical.caf"),

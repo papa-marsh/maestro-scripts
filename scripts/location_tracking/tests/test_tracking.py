@@ -1,10 +1,10 @@
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
 from maestro import db
 from maestro.testing import MaestroTest
 from maestro.utils import local_now
 
-from registry import person, zone
+from registry import person
 
 from .. import tracking
 from ..models import ZoneChange

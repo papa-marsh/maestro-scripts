@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from maestro import db
-from maestro.utils.dates import local_now
+from maestro.utils import local_now
 
 from .models import SleepEvent
 

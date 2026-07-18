@@ -3,7 +3,7 @@ from maestro.integrations import Domain
 from maestro.testing import MaestroTest
 
 from custom_domains.climate import Thermostat
-from registry import climate, person, zone
+from registry import climate, person
 
 from .. import thermostat
 

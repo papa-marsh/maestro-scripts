@@ -1,10 +1,8 @@
-from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
-from maestro.domains import AWAY, HOME
+from maestro.domains import HOME
 from maestro.integrations import Domain
 from maestro.testing import MaestroTest
-from maestro.utils import local_now
 
 from registry import person, zone
 

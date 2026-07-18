@@ -13,8 +13,7 @@ from maestro.triggers import (
     maestro_trigger,
     state_change_trigger,
 )
-from maestro.utils import JobScheduler
-from maestro.utils.dates import local_now
+from maestro.utils import JobScheduler, local_now
 
 from registry import binary_sensor, maestro, sensor, update
 from scripts.frontend.common.entity_card import EntityCardAttributes, RowColor
