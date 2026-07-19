@@ -28,10 +28,9 @@ pull-deploy-f:
     sleep 1
     just logs
 
-# Update the pinned hass-maestro library version and redeploy
+# Update the pinned hass-maestro library version
 upgrade-maestro:
     uv lock --upgrade-package hass-maestro
-    just deploy
 
 # Kill any running "flask shell" docker containers
 kill-shell:
