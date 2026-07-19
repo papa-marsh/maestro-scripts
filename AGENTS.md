@@ -1,6 +1,6 @@
 # Maestro
 
-Personal Home Assistant automations built on the [Maestro framework](https://github.com/papa-marsh/hass-maestro) (the `hass-maestro` package, resolved from GitHub and imported as `maestro`). This is a standalone application: `app.py` constructs the `MaestroApp`, and the project runs in Docker alongside Redis and Postgres.
+Personal Home Assistant automations built on the [Maestro framework](https://github.com/papa-marsh/hass-maestro) (`hass-maestro` on PyPI, imported as `maestro`). This is a standalone application: `app.py` constructs the `MaestroApp`, and the project runs in Docker alongside Redis and Postgres.
 
 Maestro's architecture, code style, type system, and testing infrastructure are documented in the library's AGENTS.md (`../hass-maestro/AGENTS.md` when developing locally). Everything there (code style, naming conventions, type annotations, error handling, logging) applies here too.
 
