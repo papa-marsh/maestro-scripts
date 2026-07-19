@@ -1,6 +1,6 @@
 # Maestro
 
-Personal Home Assistant automations built on the [Maestro framework](https://github.com/papa-marsh/hass-maestro) (`hass-maestro` on PyPI, imported as `maestro`). This is a standalone application: `app.py` constructs the `MaestroApp`, and the project runs in Docker alongside Redis and Postgres.
+Personal Home Assistant automations built on the [Maestro framework](https://github.com/papa-marsh/hass-maestro) (the `hass-maestro` package, resolved from GitHub and imported as `maestro`). This is a standalone application: `app.py` constructs the `MaestroApp`, and the project runs in Docker alongside Redis and Postgres.
 
 Maestro's architecture, code style, type system, and testing infrastructure are documented in the library's AGENTS.md (`../hass-maestro/AGENTS.md` when developing locally). Everything there (code style, naming conventions, type annotations, error handling, logging) applies here too.
 
@@ -50,9 +50,11 @@ The `mt` test fixture auto-registers via hass-maestro's pytest plugin -- no conf
 ### From Maestro (always via top-level package re-exports)
 
 ```python
-from maestro import db
+from maestro import db, get_config
 from maestro.domains import ON, OFF, HOME, AWAY, UNAVAILABLE, UNKNOWN
+from maestro.exceptions import AttributeDoesNotExistError
 from maestro.integrations import StateChangeEvent, FiredEvent, Domain, EntityId
+from maestro.registry import RegistryManager
 from maestro.triggers import state_change_trigger, cron_trigger, event_fired_trigger
 from maestro.utils import Notif, JobScheduler, local_now, format_duration, log
 from maestro.testing import MaestroTest
