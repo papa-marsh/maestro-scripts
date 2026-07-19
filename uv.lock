@@ -344,7 +344,7 @@ wheels = [
 
 [[package]]
 name = "hass-maestro"
-version = "0.1.0"
+version = "0.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -356,9 +356,9 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "structlog" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c7/14/b2522683e07b8502fbac913722f5e05b49e02e2484e5f140ee3bb2d35934/hass_maestro-0.1.0.tar.gz", hash = "sha256:4ded261c72b9d275e0f0e92ffab60be54edad860779b5bc0766ab72d908be2de", size = 140387, upload-time = "2026-07-19T00:37:24.053Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/0a/ff6f20d39769a0b87f8af8c25ab3e928ef0fbc5df05858cc66586c4bd3bc/hass_maestro-0.1.1.tar.gz", hash = "sha256:a3e361a5a8914526c3071c96f37ce8cc2edcf5935297e37b61a508fddef65194", size = 140392, upload-time = "2026-07-19T00:58:10.619Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ec/2a/0190f2f2440d60636c2b9421454b642a59685e6082900740a02a87621329/hass_maestro-0.1.0-py3-none-any.whl", hash = "sha256:e45d6f36f357c2800aaf4f7aa08389de69c682ab9a6f5b47b759c04d2b561eea", size = 92979, upload-time = "2026-07-19T00:37:22.635Z" },
+    { url = "https://files.pythonhosted.org/packages/77/00/278fe7ca340c1394310aa225f4e88752120be7a1eea07fe76e675788a7ee/hass_maestro-0.1.1-py3-none-any.whl", hash = "sha256:a9bd7ec6224b20843399df846a22d52e847e699b25b40639d67881b06302d12e", size = 92970, upload-time = "2026-07-19T00:58:09.45Z" },
 ]
 
 [package.optional-dependencies]
