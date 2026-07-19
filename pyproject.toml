@@ -4,16 +4,13 @@ version = "0.1.0"
 description = "Personal Home Assistant automations built on the Maestro framework"
 requires-python = ">=3.14"
 dependencies = [
-    "hass-maestro[postgres,test]",
+    "hass-maestro[postgres,test]>=0.1",
     "catt>=0.13.1",
     "gunicorn>=21,<23",
 ]
 
 [tool.uv]
 package = false
-
-[tool.uv.sources]
-hass-maestro = { git = "https://github.com/papa-marsh/hass-maestro", branch = "main" }
 
 [dependency-groups]
 dev = [

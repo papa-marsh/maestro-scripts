@@ -24,7 +24,7 @@ The three project packages (`scripts`, `registry`, `custom_domains`) are top-lev
 All commands run from the repo root.
 
 ```bash
-uv sync                    # Install dependencies (hass-maestro resolves from GitHub via [tool.uv.sources])
+uv sync                    # Install dependencies (hass-maestro resolves from PyPI)
 
 uv run pytest              # Run all tests
 uv run pytest scripts/home/tests/test_thermostat.py::test_check_thermostat_hold
@@ -322,4 +322,4 @@ Both are gitignored because they contain personal data. If you need to modify th
 
 ## Deployment
 
-Runs on the user's mac mini via Docker Compose (maestro + redis + postgres). Runtime configuration comes from `.env` (see `.env.example`); `app.py` owns all env parsing. The `hass-maestro` dependency resolves from GitHub via `[tool.uv.sources]`, pinned to a commit in `uv.lock`; run `just upgrade-maestro` to pick up new library commits. The generated `registry/` modules are gitignored (they describe the home's entity inventory) -- when setting up a fresh checkout, copy them from an existing deployment or let maestro regenerate them against live HA. `MAESTRO_BACKGROUND_SERVICES=false` disables the websocket and scheduler (used by `just shell` and `just prune`).
+Runs on the user's mac mini via Docker Compose (maestro + redis + postgres). Runtime configuration comes from `.env` (see `.env.example`); `app.py` owns all env parsing. The `hass-maestro` dependency resolves from PyPI (constrained in `pyproject.toml`, pinned in `uv.lock`); run `just upgrade-maestro` to pick up the latest library release. The generated `registry/` modules are gitignored (they describe the home's entity inventory) -- when setting up a fresh checkout, copy them from an existing deployment or let maestro regenerate them against live HA. `MAESTRO_BACKGROUND_SERVICES=false` disables the websocket and scheduler (used by `just shell` and `just prune`).
