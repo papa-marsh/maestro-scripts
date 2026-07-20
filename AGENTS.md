@@ -4,6 +4,8 @@ Personal Home Assistant automations built on the [Maestro framework](https://git
 
 Maestro's architecture, code style, type system, and testing infrastructure are documented in the library's AGENTS.md (`../hass-maestro/AGENTS.md` when developing locally). Everything there (code style, naming conventions, type annotations, error handling, logging) applies here too.
 
+This repo is also the reference consumer that hass-maestro's `init` scaffolding mirrors: files like the Dockerfile, docker-compose.yml, justfile, redis.conf, pyproject.toml, and AGENTS.md have template counterparts in `../hass-maestro/maestro/_cli/templates/`. When changing one of these files, check whether its template should be updated to match.
+
 ## Project Structure
 
 ```
