@@ -1,3 +1,5 @@
+from time import sleep
+
 from catt.controllers import setup_cast  # type:ignore[import-untyped]
 from maestro.domains import MediaPlayer
 from maestro.integrations import RedisClient
@@ -36,3 +38,4 @@ def call_cast_command(display: MediaPlayer, ip_address: str) -> None:
 def cast_to_displays() -> None:
     for display, ip_address in NEST_DISPLAYS:
         call_cast_command(display, ip_address)
+        sleep(90)
