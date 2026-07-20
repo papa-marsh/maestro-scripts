@@ -4,7 +4,6 @@ build:
 
 # Rebuild and redeploy the app
 deploy:
-    just upgrade-maestro
     docker compose down
     just kill-shell
     docker compose up -d --build
