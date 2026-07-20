@@ -4,6 +4,7 @@ build:
 
 # Rebuild and redeploy the app
 deploy:
+    just upgrade-maestro
     docker compose down
     just kill-shell
     docker compose up -d --build
@@ -13,26 +14,18 @@ deploy:
 # Deploy after pulling from the remote
 pull-deploy:
     git checkout main && git pull
-    docker compose down
-    just kill-shell
-    docker compose up -d --build
-    sleep 1
-    just logs
+    just deploy
 
 # Deploy after "force pulling" from the remote
 pull-deploy-f:
     git checkout main && git fetch origin && git reset --hard origin/main
-    docker compose down
-    just kill-shell
-    docker compose up -d --build
-    sleep 1
-    just logs
+    just deploy
 
 # Update the pinned hass-maestro library version
 upgrade-maestro:
     uv lock --upgrade-package hass-maestro
 
-# Kill any running "flask shell" docker containers
+# Kill any dangling "flask shell" docker containers
 kill-shell:
     docker ps --format '{{ "{{" }}.ID{{ "}}" }} {{ "{{" }}.Command{{ "}}" }}' | grep "flask shell" | awk '{print $1}' | xargs -r docker rm -f
 
